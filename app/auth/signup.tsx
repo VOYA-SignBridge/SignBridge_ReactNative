@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { supabase } from '@/supabase';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -9,7 +10,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (!email || !password || !confirm) {
       Alert.alert('Missing fields', 'Please fill out all fields.');
       return;
@@ -19,8 +20,14 @@ export default function SignUpScreen() {
       return;
     }
 
-    Alert.alert('Success', 'Account created! Please sign in.');
-    router.replace('/auth/signin');
+    const { error } = await supabase.auth.signUp({ email, password });
+
+    if (error) {
+      Alert.alert('Error', error.message);
+    } else {
+      Alert.alert('Success', 'Account created! Please sign in.');
+      router.replace('/auth/signin');
+    }
   };
 
   return (

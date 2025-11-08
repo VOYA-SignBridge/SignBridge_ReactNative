@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { supabase } from '@/supabase';
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -14,7 +15,13 @@ export default function SignInScreen() {
       return;
     }
 
-    router.replace('/translation');
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      Alert.alert('Error', error.message);
+    } else {
+      router.replace('/translation');
+    }
   };
 
   return (

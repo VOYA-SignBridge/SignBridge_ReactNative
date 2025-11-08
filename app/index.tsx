@@ -1,9 +1,26 @@
-import { Redirect } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/supabase';
+import { Session } from '@supabase/supabase-js';
 
 export default function EntryScreen() {
-  const isAuthenticated = true; 
+  const [session, setSession] = useState<Session | null>(null);
 
-  if (isAuthenticated) {
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  if (session) {
     return <Redirect href="/translation" />;
   }
   
