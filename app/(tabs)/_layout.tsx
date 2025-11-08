@@ -1,20 +1,24 @@
 // app/(tabs)/_layout.tsx
-
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
+import { useTheme } from '../../contexts/ThemeContext'; // <-- Import hook
 
 export default function TabsLayout() {
+  // Lấy ra màu sắc động từ context
+  const { colors } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#3F51B5',
-        tabBarInactiveTintColor: '#999',
+        
+        // === ÁP DỤNG MÀU ĐỘNG ===
+        tabBarActiveTintColor: colors.tabIconSelected, // <-- Đổi
+        tabBarInactiveTintColor: colors.tabIconDefault, // <-- Đổi
         tabBarStyle: {
-          borderTopWidth: 1,
-          borderTopColor: '#ddd',
-          paddingBottom: 2,
+          backgroundColor: colors.background, // <-- Đổi màu nền Tab bar
+          borderTopColor: colors.textInputBG, // (Ví dụ, dùng màu nền input)
         },
       }}
     >
@@ -27,7 +31,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-      
       <Tabs.Screen
         name="conversation"
         options={{
@@ -37,7 +40,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-      
       <Tabs.Screen
         name="avatar"
         options={{
@@ -47,7 +49,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-      
       <Tabs.Screen
         name="account"
         options={{
