@@ -14,8 +14,7 @@ export default function SignInScreen() {
       return;
     }
 
-    // 🔹 For now, just simulate success and go to /home
-    router.replace('/home');
+    router.replace('/translation');
   };
 
   return (
