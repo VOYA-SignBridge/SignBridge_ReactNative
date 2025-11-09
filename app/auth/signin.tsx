@@ -2,20 +2,21 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
-
+import axios from 'axios'
 export default function SignInScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSignIn = async () => {
-    if (!email || !password) {
-      Alert.alert('Missing fields', 'Please enter your email and password.');
-      return;
-    }
+  if (!email || !password) {
+    Alert.alert('Missing fields', 'Please enter your email and password.');
+    return;
+  }
 
-    router.replace('/translation');
-  };
+ 
+};
+
 
   return (
     <LinearGradient colors={['#000000', '#000000']} style={styles.container}>

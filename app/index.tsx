@@ -4,7 +4,7 @@ export default function EntryScreen() {
   const isAuthenticated = true; 
 
   if (isAuthenticated) {
-    return <Redirect href="/translation" />;
+    return <Redirect href="/auth/signin" />;
   }
   
   return <Redirect href="/auth/signin" />;
