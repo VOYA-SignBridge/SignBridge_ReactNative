@@ -2,21 +2,28 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
-import axios from 'axios'
+import { supabase } from '../db/supabase';
+
 export default function SignInScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSignIn = async () => {
-  if (!email || !password) {
-    Alert.alert('Missing fields', 'Please enter your email and password.');
-    return;
-  }
+    if (!email || !password) {
+      Alert.alert('Missing fields', 'Please enter your email and password.');
+      return;
+    }
 
- 
-};
+    const { data,error } = await supabase.auth.signInWithPassword({ email, password });
 
+    if (error) {
+      Alert.alert('Error', error.message);
+    } else {
+      console.log("data", data)
+      router.replace('/translation');
+    }
+  };
 
   return (
     <LinearGradient colors={['#000000', '#000000']} style={styles.container}>
