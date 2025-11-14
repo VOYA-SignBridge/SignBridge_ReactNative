@@ -3,7 +3,7 @@ import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
 import { supabase } from '../db/supabase';
-
+import AsyncStorage  from '@react-native-async-storage/async-storage';
 export default function SignInScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -16,7 +16,7 @@ export default function SignInScreen() {
     }
 
     const { data,error } = await supabase.auth.signInWithPassword({ email, password });
-
+    await AsyncStorage.setItem("access_token", data.session?.access_token || "");
     if (error) {
       Alert.alert('Error', error.message);
     } else {
