@@ -7,6 +7,7 @@ import com.mmnghi.VOYA_App.HandLandmarkerHolder
 import com.mmnghi.VOYA_App.toBitmap
 import com.mrousavy.camera.frameprocessors.Frame
 import com.mrousavy.camera.frameprocessors.FrameProcessorPlugin
+import androidx.camera.core.ImageProxy
 
 class hands_landmarkPlugin(proxy: com.mrousavy.camera.frameprocessors.VisionCameraProxy, options: Map<String, Any>?) : FrameProcessorPlugin() {
 

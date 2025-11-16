@@ -15,7 +15,6 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 
 import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ReactNativeHostWrapper
-
 import com.mmnghi.VOYA_App.HandLandmarksPackage
 import com.mmnghi.VOYA_App.hands_landmark.hands_landmarkPluginPackage
 
@@ -26,7 +25,6 @@ class MainApplication : Application(), ReactApplication {
       object : DefaultReactNativeHost(this) {
         override fun getPackages(): List<ReactPackage> =
             PackageList(this).packages.apply {
-
               add(HandLandmarksPackage())
               add(hands_landmarkPluginPackage())
             }
