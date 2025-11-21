@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert, NativeEventEmitter, NativeModules } from 'react-native';
-import { Camera, useCameraDevice, useCameraPermission, useSkiaFrameProcessor } from 'react-native-vision-camera';
+import { Camera, useCameraDevice, useCameraPermission, useFrameProcessor } from 'react-native-vision-camera';  // SỬA: useFrameProcessor thay vì useSkiaFrameProcessor
 import { VisionCameraProxy } from 'react-native-vision-camera';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -41,7 +41,7 @@ export default function TranslationScreen() {
 
   const sendToBackend = async (frames: number[][][]) => {
     try {
-      const res = await fetch('http://YOUR_BACKEND_IP:PORT/ai/alphabet', {
+      const res = await fetch('http://localhost:8000/ai/alphabet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ frames })
@@ -55,10 +55,12 @@ export default function TranslationScreen() {
     }
   };
 
-  const frameProcessor = useSkiaFrameProcessor((frame) => {
+  const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
     if (handLandmarkPlugin) {
-      (handLandmarkPlugin as any).detectHand(frame);
+      handLandmarkPlugin.call(frame);  // SỬA: .call(frame) thay vì .detectHand(frame)
+    } else {
+      console.log('handLandmarkPlugin not initialized');  // Thêm log để debug
     }
   }, []);
 
