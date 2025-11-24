@@ -1,5 +1,4 @@
 package com.nmnghi.VOYA_App
-package com.nmnghi.VOYA_App
 
 import android.content.Context
 import android.util.Log
@@ -9,10 +8,6 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
 import com.facebook.react.modules.core.DeviceEventManagerModule
-
-// Imports for registry (moved to MainApplication if duplicate)
-import com.mrousavy.camera.frameprocessors.FrameProcessorPluginRegistry
-import com.nmnghi.VOYA_App.hands_landmark.HandsLandmarkPlugin
 
 class HandLandmarksModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
@@ -43,27 +38,32 @@ class HandLandmarksModule(reactContext: ReactApplicationContext) : ReactContextB
             sendEvent("onHandLandmarksStatus", Arguments.createMap().apply { putString("status", "already_initialized") })
             return
         }
+
         try {
             val context: Context = reactApplicationContext
             val baseOptions = BaseOptions.builder()
                 .setModelAssetPath("hand_landmarker.task")
                 .build()
+
             val options = HandLandmarker.HandLandmarkerOptions.builder()
                 .setBaseOptions(baseOptions)
                 .setNumHands(1)
                 .setRunningMode(RunningMode.LIVE_STREAM)
                 .setResultListener { result, _ -> processResult(result) }
                 .build()
+
             HandLandmarkerHolder.handLandmarker = HandLandmarker.createFromOptions(context, options)
+
             sendEvent("onHandLandmarksStatus", Arguments.createMap().apply { putString("status", "initialized") })
         } catch (e: Exception) {
             Log.e("HandLandmarks", "Init failed", e)
             sendEvent("onHandLandmarksError", Arguments.createMap().apply { putString("error", e.message) })
-        }  // Closed the method here
+        }
     }
 
     private fun processResult(result: HandLandmarkerResult) {
         if (result.landmarks().isEmpty()) return
+
         val landmarksArray = Arguments.createArray()
         for (hand in result.landmarks()) {
             val handArray = Arguments.createArray()
@@ -77,6 +77,7 @@ class HandLandmarksModule(reactContext: ReactApplicationContext) : ReactContextB
             }
             landmarksArray.pushArray(handArray)
         }
+
         val params = Arguments.createMap()
         params.putArray("landmarks", landmarksArray)
         sendEvent("onHandLandmarksDetected", params)
