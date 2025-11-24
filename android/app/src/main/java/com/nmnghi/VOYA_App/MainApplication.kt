@@ -15,8 +15,9 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 
 import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ReactNativeHostWrapper
-import com.mmnghi.VOYA_App.HandLandmarksPackage
-import com.mmnghi.VOYA_App.hands_landmark.hands_landmarkPluginPackage
+
+import com.nmnghi.VOYA_App.HandLandmarksPackage
+import com.nmnghi.VOYA_App.hands_landmark.hands_landmarkPluginPackage
 
 class MainApplication : Application(), ReactApplication {
 

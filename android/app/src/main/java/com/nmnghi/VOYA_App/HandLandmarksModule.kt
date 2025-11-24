@@ -1,4 +1,4 @@
-package com.mmnghi.VOYA_App
+package com.nmnghi.VOYA_App
 
 import android.content.Context
 import android.util.Log
@@ -11,25 +11,20 @@ import com.facebook.react.modules.core.DeviceEventManagerModule
 
 class HandLandmarksModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
-    // --- PHẦN THÊM MỚI QUAN TRỌNG ---
     companion object {
         init {
             try {
-                // Ép hệ thống tải thư viện Native ngay khi App khởi động
                 System.loadLibrary("mediapipe_tasks_vision_jni")
                 Log.d("HandLandmarks", "MediaPipe library loaded successfully")
             } catch (e: UnsatisfiedLinkError) {
-                // Nếu lỗi (thường do máy ảo x86), log ra để biết
                 Log.e("HandLandmarks", "FAILED to load MediaPipe library: ${e.message}")
             }
         }
     }
-    // --------------------------------
 
     override fun getName() = "HandLandmarks"
 
     private fun sendEvent(eventName: String, params: WritableMap) {
-        // Kiểm tra null để tránh crash nếu React Context chưa sẵn sàng
         if (reactApplicationContext.hasActiveCatalystInstance()) {
             reactApplicationContext
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
@@ -39,8 +34,6 @@ class HandLandmarksModule(reactContext: ReactApplicationContext) : ReactContextB
 
     @ReactMethod
     fun initModel() {
-        // Nếu biến static đã được khởi tạo ở đâu đó (cần class Holder)
-        // Lưu ý: Bạn cần đảm bảo class HandLandmarkerHolder đã được tạo ở file khác
         if (HandLandmarkerHolder.handLandmarker != null) {
             sendEvent("onHandLandmarksStatus", Arguments.createMap().apply { putString("status", "already_initialized") })
             return
@@ -48,8 +41,6 @@ class HandLandmarksModule(reactContext: ReactApplicationContext) : ReactContextB
 
         try {
             val context: Context = reactApplicationContext
-            
-            // QUAN TRỌNG: Đảm bảo file "hand_landmarker.task" đã nằm trong android/app/src/main/assets/
             val baseOptions = BaseOptions.builder()
                 .setModelAssetPath("hand_landmarker.task")
                 .build()

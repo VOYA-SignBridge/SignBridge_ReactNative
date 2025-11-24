@@ -1,4 +1,4 @@
-package com.mmnghi.VOYA_App.hands_landmark
+package com.nmnghi.VOYA_App.hands_landmark
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

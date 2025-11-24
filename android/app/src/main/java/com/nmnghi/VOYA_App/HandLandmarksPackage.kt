@@ -1,4 +1,4 @@
-package com.mmnghi.VOYA_App
+package com.nmnghi.VOYA_App
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

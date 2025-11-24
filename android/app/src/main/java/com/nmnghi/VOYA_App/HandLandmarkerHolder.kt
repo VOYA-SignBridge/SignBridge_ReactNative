@@ -1,4 +1,4 @@
-package com.mmnghi.VOYA_App
+package com.nmnghi.VOYA_App
 
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 
