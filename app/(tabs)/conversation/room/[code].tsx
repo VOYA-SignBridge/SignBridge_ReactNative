@@ -1,11 +1,13 @@
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, StyleSheet, TextInput, TouchableOpacity, Dimensions } from "react-native";
 import { privateApi } from "@/src/api/privateApi";
+import { Video, ResizeMode } from "expo-av";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function RoomScreen() {
   const { code, participant_id, role, display_name, wsUrl } = useLocalSearchParams();
-
+  
   const [participants, setParticipants] = useState<Record<string, any>>({});
   const [messages, setMessages] = useState<any[]>([]);
   const [ws, setWs] = useState<WebSocket | null>(null);
@@ -22,7 +24,9 @@ const memberText = memberNames.join(", ");
   role: string;
   joined_at: string;
 };
-
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const VIDEO_WIDTH = SCREEN_WIDTH * 0.5;          // 50% màn hình
+const VIDEO_HEIGHT = VIDEO_WIDTH * (16 / 9);     // tỉ lệ dọc gần 9:16
 
 useEffect(() => {
   async function loadParticipants() {
@@ -148,23 +152,61 @@ useEffect(() => {
   showsVerticalScrollIndicator={false}
   keyExtractor={(_, i) => i.toString()}
   renderItem={({ item }) => {
-    const isMe = String(item.participant_id) === String(participant_id);
+    const sender = item.sender || {};
+    const isMe = String(sender.participant_id) === String(participant_id);
 
     return (
       <View style={isMe ? styles.bubbleRight : styles.bubbleLeft}>
-        <Text style={styles.bubbleText}>{item.text}</Text>
-
-        <Text style={styles.timeText}>
-          {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+        {/* Tên + role */}
+        <Text style={{ fontSize: 12, fontWeight: "600", marginBottom: 4 }}>
+          {sender.display_name ?? "Unknown"} ({sender.role ?? "normal"})
         </Text>
 
+        {/* TEXT */}
+        <Text style={styles.bubbleText}>{item.text}</Text>
+
+        {/* SIGN VIDEOS (nếu có) */}
+        {Array.isArray(item.videos) && item.videos.length > 0 && (
+  <View style={{ marginTop: 8, width: "100%", alignItems: isMe ? "flex-end" : "flex-start" }}>
+    {item.videos.map((v: any) => (
+      <View
+        key={`${v.sign_id}-${v.key}`}
+        style={{ marginBottom: 8, alignItems: "center" }}
+      >
+        <Video
+          source={{ uri: v.url }}
+          style={{
+            width: VIDEO_WIDTH,
+            height: VIDEO_HEIGHT,
+            backgroundColor: "#000",
+          }}
+          useNativeControls
+          resizeMode={ResizeMode.CONTAIN}
+          isLooping
+          shouldPlay={false}     // user bấm play
+          onError={(e) => console.log("VIDEO ERROR", e)}
+        />
+        <Text style={{ fontSize: 11, marginTop: 4, paddingHorizontal: 4, backgroundColor: "#eee" }}>
+          {v.key}
+        </Text>
+      </View>
+    ))}
+  </View>
+)}
+
+
+        {/* TIME */}
         <Text style={styles.timeText}>
-          {participants[item.participant_id]?.display_name ?? "Unknown"}
+          {new Date(item.timestamp * 1000).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </Text>
       </View>
     );
   }}
 />
+
 
 
     <View style={styles.inputRow}>
@@ -211,24 +253,27 @@ const styles = StyleSheet.create({
   },
 
   bubbleLeft: {
-    maxWidth: "75%",
-    backgroundColor: "white",
-    padding: 12,
-    borderRadius: 16,
-    borderTopLeftRadius: 0,
-    marginBottom: 10,
-    alignSelf: "flex-start",
-  },
+  maxWidth: "90%",             // 🔼 rộng hơn
+  backgroundColor: "white",
+  padding: 12,
+  borderRadius: 16,
+  borderTopLeftRadius: 0,
+  marginBottom: 10,
+  alignSelf: "flex-start",
+  alignItems: "flex-start",     // text/video thẳng lề trái
+},
 
-  bubbleRight: {
-    maxWidth: "75%",
-    backgroundColor: "#D1F7F2",
-    padding: 12,
-    borderRadius: 16,
-    borderTopRightRadius: 0,
-    marginBottom: 10,
-    alignSelf: "flex-end",
-  },
+bubbleRight: {
+  maxWidth: "90%",             // 🔼 rộng hơn
+  backgroundColor: "#D1F7F2",
+  padding: 12,
+  borderRadius: 16,
+  borderTopRightRadius: 0,
+  marginBottom: 10,
+  alignSelf: "flex-end",
+  alignItems: "flex-end",       // text/video thẳng lề phải
+},
+
 
   bubbleText: {
     fontSize: 15,

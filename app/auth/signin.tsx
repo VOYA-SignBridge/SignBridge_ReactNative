@@ -20,7 +20,7 @@ export default function SignInScreen() {
     if (error) {
       Alert.alert('Error', error.message);
     } else {
-      console.log("data", data)
+      console.log("data", data.session?.access_token)
       router.replace('/translation');
     }
   };
