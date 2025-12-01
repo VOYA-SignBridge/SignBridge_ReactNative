@@ -26,8 +26,8 @@ export default function SignInScreen() {
   };
 
   return (
-    <LinearGradient colors={['#000000', '#000000']} style={styles.container}>
-      <Image source={require('../../assets/images/logo1.png')} style={styles.logo} />
+    <LinearGradient colors={['#ffffff', '#ffffff']} style={styles.container}>
+      <Image source={require('../../assets/images/logo.png')} style={styles.logo} />
       <Text style={styles.subtitle}>An AI-based Sign Language Translator</Text>
 
       <TextInput
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   logo: { height: 180, width: 180, marginBottom: 16 },
   subtitle: {
-    color: '#fff',
+    color: '#00afef',
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -72,22 +72,21 @@ const styles = StyleSheet.create({
   },
   input: {
     width: '100%',
-    backgroundColor: 'rgba(0,0,0,0.1)',
-    borderColor: '#ccc',
+    borderColor: '#00afef',
     borderWidth: 1,
     borderRadius: 10,
-    color: '#fff',
+    color: '#00afef',
     padding: 12,
     marginBottom: 12,
   },
   button: {
-    backgroundColor: '#fff',
+    backgroundColor: '#1f5ca9',
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
     width: '100%',
     marginTop: 8,
   },
-  buttonText: { color: '#3F51B5', fontWeight: 'bold', fontSize: 16 },
-  link: { color: '#eee', marginTop: 16 },
+  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  link: { color: '#00afef', marginTop: 16 },
 });

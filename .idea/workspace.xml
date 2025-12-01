@@ -69,17 +69,16 @@
       <change afterPath="$PROJECT_DIR$/babel.config.js" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/metro.config.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/app.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/(tabs)/conversation/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/conversation/index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/(tabs)/conversation/room/[code].tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/conversation/room/[code].tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/(tabs)/translation.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/translation.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/auth/signin.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/auth/signin.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/auth/signup.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/auth/signup.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/contexts/ThemeContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/contexts/ThemeContext.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/privateApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/privateApi.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/config.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,21 +91,21 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "itzkoi-ctu"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;itzkoi-ctu&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/VOYA-SignBridge/SignBridge_ReactNative.git",
-    "accountId": "d64d896a-d8c5-41a1-91ce-e976014852a9"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/VOYA-SignBridge/SignBridge_ReactNative.git&quot;,
+    &quot;accountId&quot;: &quot;d64d896a-d8c5-41a1-91ce-e976014852a9&quot;
   }
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 3
-}]]></component>
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
   <component name="ProjectId" id="35vtB4qwxEc2whIQ3ZvYB4TI8aP" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -121,7 +120,7 @@
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "Merging long-dev",
+    "git-widget-placeholder": "Merging room__video__test",
     "last_opened_file_path": "E:/CTU-SIGNBRIDGE/SignBridge_ReactNative"
   }
 }]]></component>
