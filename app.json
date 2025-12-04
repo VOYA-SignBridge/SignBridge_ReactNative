@@ -3,7 +3,7 @@
     "name": "VOYA_App",
     "slug": "VOYA_App",
     "version": "1.0.0",
-    "orientation": "default",
+    "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "voyaapp",
     "userInterfaceStyle": "automatic",
