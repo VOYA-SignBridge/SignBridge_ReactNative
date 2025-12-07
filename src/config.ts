@@ -25,5 +25,6 @@ function getLocalhost() {
 
 
 const HOST = getLocalhost();
-//export const API_URL = `http://${HOST}:8000`;
- export const API_URL="http://192.168.1.13:8000"
+// export const API_URL = `http://${HOST}:8000`;
+export const API_URL = "https://voya-signbridge-backend.fly.dev"
+//  export const API_URL="http://192.168.1.13:8000"

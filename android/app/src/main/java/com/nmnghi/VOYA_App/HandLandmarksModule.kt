@@ -9,38 +9,47 @@ import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 class HandLandmarksModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
     companion object {
-        private const val THROTTLE_INTERVAL_MS = 50L // Chỉ xử lý mỗi 100ms (10 FPS)
+        private const val THROTTLE_INTERVAL_MS = 50L
+        private const val NO_HAND_DEBOUNCE_MS = 150L
         
         init {
             try {
                 System.loadLibrary("mediapipe_tasks_vision_jni")
-                Log.d("HandLandmarks", "MediaPipe library loaded successfully")
+                Log.d("HandLandmarks", "MediaPipe library loaded")
             } catch (e: UnsatisfiedLinkError) {
-                Log.e("HandLandmarks", "FAILED to load MediaPipe library: ${e.message}")
+                Log.e("HandLandmarks", "Failed to load MediaPipe: ${e.message}")
             }
         }
     }
 
-    private var lastProcessedTime = 0L
+    private val lastProcessedTime = AtomicLong(0L)
+    private val lastHandDetectedTime = AtomicLong(0L)
     private val isProcessing = AtomicBoolean(false)
+    private val frameCount = AtomicLong(0L)
 
     override fun getName() = "HandLandmarks"
 
     private fun sendEvent(eventName: String, params: WritableMap) {
         if (reactApplicationContext.hasActiveCatalystInstance()) {
-            reactApplicationContext
-                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                .emit(eventName, params)
+            try {
+                reactApplicationContext
+                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                    .emit(eventName, params)
+            } catch (e: Exception) {
+                Log.e("HandLandmarks", "Error sending event: ${e.message}")
+            }
         }
     }
 
     @ReactMethod
     fun initModel() {
         if (HandLandmarkerHolder.handLandmarker != null) {
+            Log.d("HandLandmarks", "Model already initialized")
             sendEvent("onHandLandmarksStatus", Arguments.createMap().apply { 
                 putString("status", "already_initialized") 
             })
@@ -49,6 +58,7 @@ class HandLandmarksModule(reactContext: ReactApplicationContext) : ReactContextB
 
         try {
             val context: Context = reactApplicationContext
+            
             val baseOptions = BaseOptions.builder()
                 .setModelAssetPath("hand_landmarker.task")
                 .build()
@@ -56,80 +66,101 @@ class HandLandmarksModule(reactContext: ReactApplicationContext) : ReactContextB
             val options = HandLandmarker.HandLandmarkerOptions.builder()
                 .setBaseOptions(baseOptions)
                 .setNumHands(2)
-                .setMinHandDetectionConfidence(0.3f)
-                .setMinHandPresenceConfidence(0.3f)
-                .setMinTrackingConfidence(0.3f)
+                .setMinHandDetectionConfidence(0.4f)
+                .setMinHandPresenceConfidence(0.4f)
+                .setMinTrackingConfidence(0.5f)
                 .setRunningMode(RunningMode.LIVE_STREAM)
                 .setResultListener { result, _ -> 
-                    // Throttle processing
-                    val currentTime = System.currentTimeMillis()
-                    if (currentTime - lastProcessedTime >= THROTTLE_INTERVAL_MS && 
-                        !isProcessing.get()) {
-                        lastProcessedTime = currentTime
-                        processResult(result)
-                    }
+                    processResult(result)
+                }
+                .setErrorListener { error ->
+                    Log.e("HandLandmarks", "MediaPipe error: ${error.message}")
                 }
                 .build()
 
             HandLandmarkerHolder.handLandmarker = HandLandmarker.createFromOptions(context, options)
-
+            
+            Log.d("HandLandmarks", "Model initialized successfully")
             sendEvent("onHandLandmarksStatus", Arguments.createMap().apply { 
                 putString("status", "initialized") 
             })
         } catch (e: Exception) {
             Log.e("HandLandmarks", "Init failed", e)
             sendEvent("onHandLandmarksError", Arguments.createMap().apply { 
-                putString("error", e.message) 
+                putString("error", e.message ?: "Unknown error") 
             })
         }
     }
 
     private fun processResult(result: HandLandmarkerResult) {
-            Log.d("HandLandmarks", "Detected hands: ${result.landmarks().size}")
-
-        if (isProcessing.getAndSet(true)) return
+        val currentTime = System.currentTimeMillis()
+        
+        if (currentTime - lastProcessedTime.get() < THROTTLE_INTERVAL_MS) {
+            return
+        }
+        
+        if (!isProcessing.compareAndSet(false, true)) {
+            return
+        }
         
         try {
+            frameCount.incrementAndGet()
+            lastProcessedTime.set(currentTime)
+
             if (result.landmarks().isEmpty()) {
-                // Gửi event "không có tay" để UI xóa landmarks cũ
-                sendEvent("onHandLandmarksDetected", Arguments.createMap().apply {
-                    putArray("landmarks", Arguments.createArray())
-                })
+                if (currentTime - lastHandDetectedTime.get() > NO_HAND_DEBOUNCE_MS) {
+                    sendEvent("onHandLandmarksDetected", Arguments.createMap().apply {
+                        putArray("landmarks", Arguments.createArray())
+                        putInt("handCount", 0)
+                    })
+                }
                 return
             }
 
-            // Chỉ gửi landmarks quan trọng (tip points + wrist)
+            lastHandDetectedTime.set(currentTime)
+
             val landmarksArray = Arguments.createArray()
-for (hand in result.landmarks()) {
-    val handArray = Arguments.createArray()
-    hand.forEachIndexed { idx, lm ->
-        val map = Arguments.createMap()
-        map.putInt("index", idx)
-        map.putDouble("x", lm.x().toDouble())
-        map.putDouble("y", lm.y().toDouble())
-        map.putDouble("z", lm.z().toDouble())
-        handArray.pushMap(map)
-    }
-    landmarksArray.pushArray(handArray)
-}
+            
+            for (hand in result.landmarks()) {
+                val handArray = Arguments.createArray()
+                
+                hand.forEachIndexed { idx, lm ->
+                    val map = Arguments.createMap()
+                    map.putInt("index", idx)
+                    map.putDouble("x", (lm.x() * 1000).toInt() / 1000.0)
+                    map.putDouble("y", (lm.y() * 1000).toInt() / 1000.0)
+                    map.putDouble("z", (lm.z() * 1000).toInt() / 1000.0)
+                    handArray.pushMap(map)
+                }
+                
+                landmarksArray.pushArray(handArray)
+            }
 
             val params = Arguments.createMap()
             params.putArray("landmarks", landmarksArray)
+            params.putInt("handCount", result.landmarks().size)
+            
+            if (frameCount.get() % 30L == 0L) {
+                Log.d("HandLandmarks", "Frames: ${frameCount.get()} | Hands: ${result.landmarks().size}")
+            }
+            
             sendEvent("onHandLandmarksDetected", params)
+            
+        } catch (e: Exception) {
+            Log.e("HandLandmarks", "Error processing", e)
         } finally {
             isProcessing.set(false)
         }
     }
 
-    @ReactMethod
-    fun setThrottleInterval(intervalMs: Int) {
-        // Cho phép điều chỉnh từ React Native
-        // lastProcessedTime sẽ sử dụng intervalMs này
-    }
-
     override fun onCatalystInstanceDestroy() {
         super.onCatalystInstanceDestroy()
-        HandLandmarkerHolder.handLandmarker?.close()
-        HandLandmarkerHolder.handLandmarker = null
+        try {
+            HandLandmarkerHolder.handLandmarker?.close()
+            HandLandmarkerHolder.handLandmarker = null
+            Log.d("HandLandmarks", "Cleanup successful")
+        } catch (e: Exception) {
+            Log.e("HandLandmarks", "Cleanup error: ${e.message}")
+        }
     }
 }
