@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState, useRef } from "react";
 import { 
   View, 
@@ -24,7 +24,8 @@ export default function RoomScreen() {
   const [messages, setMessages] = useState<any[]>([]);
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [text, setText] = useState("");
-  
+  const [roomInfo, setRoomInfo] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<any | null>(null);
   // 🔥 Modal QR state
   const [showQRModal, setShowQRModal] = useState(false);
   
@@ -39,7 +40,35 @@ export default function RoomScreen() {
     role: string;
     joined_at: string;
   };
-  
+  useEffect(() => {
+  async function loadRoomInfo() {
+    try {
+      console.log("Loading room info for code:", code);
+      const res = await privateApi.get(`/rooms/${code}/room`);
+      setRoomInfo(res.data);
+    } catch (err) {
+      console.log("Load room info error", err);
+    }
+  }
+
+  loadRoomInfo();
+}, [code]);
+useEffect(() => {
+  const loadUserInfo = async () => {
+    try {
+      const raw = await AsyncStorage.getItem("user_info");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setUserInfo(parsed);
+      }
+    } catch (err) {
+      console.log("Error loading user_info:", err);
+    }
+  };
+
+  loadUserInfo();
+}, []);
+
   // 🔥 Responsive video size theo platform
   const SCREEN_WIDTH = Dimensions.get("window").width;
   const isWeb = Platform.OS === 'web';
@@ -150,6 +179,13 @@ export default function RoomScreen() {
         if (msg.type === "chat.message") {
           setMessages((prev) => [...prev, msg]);
         }
+        if (msg.type === "room.ended") {
+        alert("Host has ended the room.");
+        try { socket?.close(); } catch (e) {}
+        router.replace("/conversation");
+        return;
+      }
+
       };
 
       socket.onclose = () => {
@@ -172,17 +208,42 @@ export default function RoomScreen() {
   }, [wsUrl, participant_id, display_name, role]); // 🔥 Thêm dependencies
 
   const sendMessage = () => {
-    if (!ws || ws.readyState !== 1) return;
+  if (!ws || ws.readyState !== 1) return;
 
-    const msg = {
-      type: "chat.message",
-      text,
-      no_echo: true,
-    };
+  const trimmed = text.trim();
+  if (!trimmed) return;          // bỏ qua message rỗng
 
-    ws.send(JSON.stringify(msg));
-    setText("");
+  const msg = {
+    type: "chat.message",
+    text: trimmed,
+    no_echo: true,
   };
+
+  ws.send(JSON.stringify(msg));
+  setText("");
+};
+
+const handleLeaveRoom = async () => {
+  try {
+    await privateApi.post(`/rooms/${code}/leave`);
+  } catch (err) {
+    console.log("Leave error:", err);
+  }
+
+  ws?.close();
+  router.replace("/conversation"); // quay về Home
+};
+const handleEndRoom = async () => {
+  try {
+    await privateApi.post(`/rooms/${code}/end`);
+  } catch (err) {
+    console.log("End room error:", err);
+  }
+
+  ws?.close();
+  router.replace("/conversation"); // quay về Home
+};
+
 
   return (
     <View style={styles.container}>
@@ -207,6 +268,22 @@ export default function RoomScreen() {
           >
             <Text style={styles.qrButtonText}>📱 QR</Text>
           </TouchableOpacity>
+           <TouchableOpacity 
+    style={[styles.leaveBtn, { marginLeft: 10 }]}
+    onPress={handleLeaveRoom}
+  >
+    <Text style={styles.leaveText}>↩︎ Leave</Text>
+  </TouchableOpacity>
+
+  {roomInfo?.owner_id === userInfo?.id && (
+  <TouchableOpacity 
+    style={[styles.endBtn, { marginLeft: 10 }]}
+    onPress={handleEndRoom}
+  >
+    <Text style={styles.endText}>🛑 End</Text>
+  </TouchableOpacity>
+)}
+
         </View>
       </View>
 
@@ -508,4 +585,27 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 16,
   },
+  leaveBtn: {
+  backgroundColor: "#f6b93b",
+  paddingHorizontal: 14,
+  paddingVertical: 8,
+  borderRadius: 8,
+},
+leaveText: {
+  color: "white",
+  fontWeight: "700",
+},
+
+endBtn: {
+  backgroundColor: "#e74c3c",
+  paddingHorizontal: 14,
+  paddingVertical: 8,
+  borderRadius: 8,
+},
+endText: {
+  color: "white",
+  fontWeight: "700",
+},
+
 });
+

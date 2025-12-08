@@ -90,11 +90,7 @@ export default function ConversationScreen() {
       console.log("Create room response", res.data);
 
       // Chủ phòng join luôn
-      await handleJoinRoom(code);
-
-      // Lưu code & show QR để người Deaf scan
-      setCreatedCode(code);
-      setShowQRModal(true);
+      await handleJoinRoom(code);      
     } catch (err) {
       console.log("Create room error:", err);
       alert("Không thể tạo phòng. Vui lòng thử lại!");
