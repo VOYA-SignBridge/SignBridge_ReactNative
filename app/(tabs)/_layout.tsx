@@ -32,6 +32,15 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="text_to_vid"
+        options={{
+          title: 'Text to Vid',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="text" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="conversation"
         options={{
           title: 'Conversation',

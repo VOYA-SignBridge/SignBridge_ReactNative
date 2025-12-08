@@ -375,7 +375,7 @@
 
 //   const sendToBackend = async (frames: number[][]) => {
 //     if (isSending.current) return;
-    
+
 //     isSending.current = true;
 //     setIsProcessing(true);
 
@@ -459,8 +459,8 @@
 //           frameProcessor={frameProcessor}
 //           pixelFormat="yuv"
 //         />
-        
-        
+
+
 //         {/* Đóng camera */}
 //         <TouchableOpacity 
 //           onPress={() => {
@@ -547,7 +547,7 @@
 //   return (
 //     <View style={styles.centerContainer}>
 //       <Text style={styles.title}>Dịch Ngôn Ngữ Ký Hiệu</Text>
-      
+
 //       <TouchableOpacity 
 //         onPress={() => setShowCamera(true)} 
 //         style={styles.bigButton}
@@ -666,22 +666,23 @@
 //   translationText: { color: 'white', fontSize: 24, fontWeight: 'bold' },
 // });
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  ScrollView, 
-  StyleSheet, 
-  NativeEventEmitter, 
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  NativeEventEmitter,
   NativeModules,
   Alert,
-  Dimensions
+  Dimensions,
+  TextInput
 } from 'react-native';
-import { 
-  Camera, 
-  useCameraDevice, 
-  useCameraPermission, 
-  useFrameProcessor, 
+import {
+  Camera,
+  useCameraDevice,
+  useCameraPermission,
+  useFrameProcessor,
   VisionCameraProxy,
   useCameraFormat
 } from 'react-native-vision-camera';
@@ -707,6 +708,8 @@ export default function TranslationScreen() {
   const [isRecording, setIsRecording] = useState(false);
   const isRecordingRef = useRef(false);
 
+  const [inputText, setInputText] = useState('');
+
   // ⭐ State cho vẽ landmarks
   const [handLandmarks, setHandLandmarks] = useState<LandmarkPoint[][]>([]);
 
@@ -715,10 +718,10 @@ export default function TranslationScreen() {
     { videoResolution: { width: 640, height: 480 } },
     { fps: 20 }
   ]);
-  
+
   const { hasPermission, requestPermission } = useCameraPermission();
 
-  const keypointsBuffer = useRef<number[][]>([]); 
+  const keypointsBuffer = useRef<number[][]>([]);
   const isSending = useRef(false);
   const frameCounter = useRef(0);
   const lastEventTime = useRef(0);
@@ -752,7 +755,7 @@ export default function TranslationScreen() {
 
       try {
         const handsDetected = event.landmarks.slice(0, 2);
-        
+
         // ⭐ CẬP NHẬT landmarks để vẽ
         setHandLandmarks(handsDetected);
         setHandCount(handsDetected.length);
@@ -760,7 +763,7 @@ export default function TranslationScreen() {
         // ⭐ BỎ HẾT quality check - chỉ cần thấy tay là OK
         if (handsDetected.length > 0) {
           setStatusMsg(
-            isRecordingRef.current 
+            isRecordingRef.current
               ? `✅ Đang ghi (${keypointsBuffer.current.length}/${SEQ_LEN})`
               : `✅ Thấy ${handsDetected.length} tay - Bấm GHI`
           );
@@ -798,14 +801,14 @@ export default function TranslationScreen() {
 
   const sendToBackend = async (frames: number[][]) => {
     if (isSending.current) return;
-    
+
     isSending.current = true;
     setIsProcessing(true);
 
     try {
       const res = await privateApi.post('/ai/tcn-recognize', { frames });
       const data = res.data;
-      
+
       console.log("📊", data.label, data.probability);
 
       if (data.label && data.probability >= MIN_CONFIDENCE) {
@@ -836,7 +839,7 @@ export default function TranslationScreen() {
 
     if (plugin != null) {
       try {
-        plugin.call(frame); 
+        plugin.call(frame);
       } catch (error) {
         console.log('Frame error');
       }
@@ -874,9 +877,9 @@ export default function TranslationScreen() {
           frameProcessor={frameProcessor}
           pixelFormat="yuv"
         />
-        
+
         {/* ⭐ VẼ LANDMARKS LÊN TAY */}
-        <HandLandmarksCanvas 
+        <HandLandmarksCanvas
           landmarks={handLandmarks}
           width={SCREEN_WIDTH}
           height={SCREEN_HEIGHT}
@@ -888,15 +891,15 @@ export default function TranslationScreen() {
             👁️ {handCount} tay | {statusMsg}
           </Text>
         </View>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           onPress={() => {
             setShowCamera(false);
             keypointsBuffer.current = [];
             setHandLandmarks([]);
             isRecordingRef.current = false;
             setIsRecording(false);
-          }} 
+          }}
           style={styles.closeButton}
         >
           <Text style={styles.closeButtonText}>✕</Text>
@@ -917,11 +920,11 @@ export default function TranslationScreen() {
             ]}
           >
             <Text style={styles.recordButtonText}>
-              {isRecording 
-                ? `⏺ GHI ${keypointsBuffer.current.length}/${SEQ_LEN}` 
+              {isRecording
+                ? `⏺ GHI ${keypointsBuffer.current.length}/${SEQ_LEN}`
                 : handCount === 0
-                ? '⏸ Chờ thấy tay...'
-                : '🎬 GHI KÝ HIỆU'}
+                  ? '⏸ Chờ thấy tay...'
+                  : '🎬 GHI KÝ HIỆU'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -939,7 +942,7 @@ export default function TranslationScreen() {
               {signTranslation || "..."}
             </Text>
           </ScrollView>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => {
               setSignTranslation('');
               keypointsBuffer.current = [];
@@ -956,9 +959,9 @@ export default function TranslationScreen() {
   return (
     <View style={styles.centerContainer}>
       <Text style={styles.title}>Dịch Ngôn Ngữ Ký Hiệu</Text>
-      
-      <TouchableOpacity 
-        onPress={() => setShowCamera(true)} 
+
+      <TouchableOpacity
+        onPress={() => setShowCamera(true)}
         style={styles.bigButton}
       >
         <Text style={styles.bigButtonText}>📷 BẮT ĐẦU</Text>
@@ -972,54 +975,55 @@ export default function TranslationScreen() {
         <Text style={styles.instructionText}>• Linh hoạt với vùng an toàn</Text>
       </View>
     </View>
+
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'black' },
   centerContainer: {
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    backgroundColor: 'white', 
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white',
     padding: 20,
   },
-  title: { 
-    fontSize: 26, 
-    fontWeight: 'bold', 
-    marginBottom: 30, 
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginBottom: 30,
     color: '#333',
     textAlign: 'center',
   },
   textInfo: { fontSize: 18, marginBottom: 20, color: '#333' },
   textError: { fontSize: 18, color: 'red' },
   buttonPrimary: {
-    backgroundColor: '#007AFF', 
-    paddingVertical: 12, 
-    paddingHorizontal: 24, 
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 8,
   },
   buttonText: { color: 'white', fontSize: 16, fontWeight: '600' },
   bigButton: {
-    width: 180, 
-    height: 180, 
-    backgroundColor: '#007AFF', 
+    width: 180,
+    height: 180,
+    backgroundColor: '#007AFF',
     borderRadius: 90,
-    justifyContent: 'center', 
-    alignItems: 'center', 
+    justifyContent: 'center',
+    alignItems: 'center',
     elevation: 10,
-    shadowColor: '#000', 
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3, 
-    shadowRadius: 5, 
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
     marginBottom: 30,
   },
-  bigButtonText: { 
-    color: 'white', 
-    fontSize: 20, 
-    fontWeight: 'bold' 
+  bigButtonText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold'
   },
-  
+
   instructionBox: {
     backgroundColor: '#f0f9ff',
     padding: 20,
@@ -1041,21 +1045,21 @@ const styles = StyleSheet.create({
   },
 
   closeButton: {
-    position: 'absolute', 
-    top: 50, 
+    position: 'absolute',
+    top: 50,
     right: 20,
-    backgroundColor: 'rgba(0,0,0,0.7)', 
-    width: 44, 
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    width: 44,
     height: 44,
-    borderRadius: 22, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
     zIndex: 10,
   },
-  closeButtonText: { 
-    color: 'white', 
-    fontWeight: 'bold', 
-    fontSize: 20 
+  closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 20
   },
 
   statusBar: {
@@ -1107,10 +1111,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
   },
-  processingText: { 
-    color: 'white', 
-    fontSize: 14, 
-    fontWeight: '600' 
+  processingText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600'
   },
 
   translationBox: {
@@ -1130,9 +1134,9 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     fontWeight: '700',
   },
-  translationText: { 
-    color: 'white', 
-    fontSize: 20, 
+  translationText: {
+    color: 'white',
+    fontSize: 20,
     fontWeight: 'bold',
     minHeight: 28,
   },

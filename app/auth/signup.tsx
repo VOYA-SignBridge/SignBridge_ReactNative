@@ -2,8 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
-import { supabase } from '../db/supabase';
-
+import { supabase } from '../../supabase';
 export default function SignUpScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
