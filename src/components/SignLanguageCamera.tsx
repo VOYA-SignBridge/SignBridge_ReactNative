@@ -22,7 +22,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import HandLandmarksCanvas from '@/components/HandLandmarksCanvas';
 import { privateApi } from '@/api/privateApi';
-import { useTheme } from '../../contexts/ThemeContext';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SEQ_LEN = 24;
@@ -72,7 +71,7 @@ export default function SignLanguageCamera({
     { videoResolution: { width: 640, height: 480 } },
     { fps: 30 }
   ]);
-  const { hasPermission, requestPermission } = useCameraPermission();
+  const { hasPermission } = useCameraPermission();
 
   useEffect(() => {
     try {
@@ -95,10 +94,12 @@ export default function SignLanguageCamera({
 
   const startRecordingFlow = () => {
     if (isRecording || isProcessing || countdown > 0) return;
+    
     if (handCount === 0) {
       setStatusMsg("Đưa tay vào trước khi bấm");
       return;
     }
+
     setCountdown(3);
     let count = 3;
     countdownTimer.current = setInterval(() => {
@@ -134,7 +135,9 @@ export default function SignLanguageCamera({
         if (handsDetected.length > 0) {
           setStatusMsg(isRecordingRef.current
             ? `Đang ghi (${keypointsBuffer.current.length}/${SEQ_LEN})`
-            : `Sẵn sàng`);
+            : countdown > 0 
+              ? `Chuẩn bị ${countdown}` 
+              : `Sẵn sàng`);
         }
 
         if (!isRecordingRef.current) return;
@@ -176,7 +179,6 @@ export default function SignLanguageCamera({
           ? `${signTranslation} ${data.label}` 
           : data.label;
         
-        // Check duplicate
         const words = signTranslation.trim().split(' ');
         if (words[words.length - 1] !== data.label) {
           setSignTranslation(newTranslation);
@@ -214,7 +216,8 @@ export default function SignLanguageCamera({
   if (!hasPermission || !device) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
-        <Text style={{ color: theme.text }}>Đang tải Camera...</Text>
+        <ActivityIndicator size="large" color={theme.primary} />
+        <Text style={{ color: theme.text, marginTop: 10 }}>Đang khởi tạo Camera...</Text>
       </View>
     );
   }
@@ -227,7 +230,18 @@ export default function SignLanguageCamera({
           style={styles.hiddenInput}
           autoFocus={true}
           showSoftInputOnFocus={false}
-          onSubmitEditing={startRecordingFlow}
+          onSubmitEditing={() => startRecordingFlow()}
+          onChangeText={(t) => {
+            if(t.length > 0) {
+                startRecordingFlow();
+                hiddenInputRef.current?.clear();
+            }
+          }}
+          onKeyPress={({ nativeEvent }) => {
+            if (nativeEvent.key === ' ' || nativeEvent.key === 'Enter') {
+              startRecordingFlow();
+            }
+          }}
         />
       )}
 
@@ -287,7 +301,7 @@ export default function SignLanguageCamera({
           style={[
             styles.recordBtn,
             { backgroundColor: theme.primary },
-            isRecording && styles.recordingActive,
+            (isRecording || countdown > 0) && styles.recordingActive,
             handCount === 0 && styles.recordDisabled
           ]}
         >
@@ -361,7 +375,7 @@ const styles = StyleSheet.create({
   },
   translationResultBox: {
     width: '100%',
-    backgroundColor: 'rgba(0,0,0,0.85)',
+    backgroundColor: 'rgba(65,65,65,0.85)',
     padding: 16,
     borderRadius: 16,
     marginBottom: 20,
@@ -387,10 +401,12 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.3)'
   },
   recordingActive: {
-    backgroundColor: '#ff4757'
+    backgroundColor: '#ff4757',
+    borderColor: 'white'
   },
   recordDisabled: {
-    backgroundColor: '#ccc'
+    backgroundColor: '#ccc',
+    borderColor: '#999'
   },
   countdownOverlay: {
     ...StyleSheet.absoluteFillObject,
