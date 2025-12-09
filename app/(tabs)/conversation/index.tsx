@@ -12,7 +12,7 @@ import {
 import { privateApi } from "@/api/privateApi";
 import { API_URL } from "@/config";
 import QRCode from "react-native-qrcode-svg";
-
+import { useTheme } from "contexts/ThemeContext";
 type CreateRoomResponse = {
   code: string;
 };
@@ -39,9 +39,9 @@ export default function ConversationScreen() {
   // Scanner state
   const [showScanner, setShowScanner] = useState(false);
   
-  // 🔥 Thêm flag để tránh join nhiều lần
+  //  Thêm flag để tránh join nhiều lần
   const [isJoining, setIsJoining] = useState(false);
-
+  const { colors: theme } = useTheme();
   // JOIN ROOM
   const handleJoinRoom = async (overrideCode?: string) => {
     const code = (overrideCode || roomCode).trim();
@@ -169,7 +169,7 @@ export default function ConversationScreen() {
   }
 
   return (
-    <View style={{ padding: 20, marginTop: 50 }}>
+    <View style={{ padding: 20, marginTop: 50 , backgroundColor: theme.background}}>
       <Text style={{ fontSize: 22, fontWeight: "700" }}>Conversation</Text>
 
       {/* CREATE ROOM */}

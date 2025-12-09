@@ -10,12 +10,6 @@ import {
   Dimensions,
   ActivityIndicator,
   TextInput,
-  TouchableWithoutFeedback,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  Keyboard
 } from 'react-native';
 import {
   Camera,
@@ -25,13 +19,12 @@ import {
   useCameraFormat,
   useFrameProcessor
 } from 'react-native-vision-camera';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useVideoPlayer, VideoView } from 'expo-video';
 import { Ionicons } from '@expo/vector-icons';
-import SignLanguageCamera from '@/components/SignLanguageCamera';
-
+import HandLandmarksCanvas from '@/components/HandLandmarksCanvas';
 import { privateApi } from '@/api/privateApi';
+import { useTheme } from '../../contexts/ThemeContext';
 
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SEQ_LEN = 24;
 const FRAME_SKIP = 2;
 const MIN_CONFIDENCE = 0.55;
@@ -42,10 +35,21 @@ const plugin = VisionCameraProxy.initFrameProcessorPlugin('hands_landmark', {});
 
 type LandmarkPoint = { x: number; y: number; z?: number };
 
-export default function TranslationScreen() {
-  const { colors: theme } = useTheme();
+interface SignLanguageCameraProps {
+  onClose: () => void;
+  onTranslationUpdate: (text: string) => void;
+  theme: any;
+  showTranslationBox?: boolean;
+  autoFocusInput?: boolean;
+}
 
-  const [showCamera, setShowCamera] = useState(false);
+export default function SignLanguageCamera({
+  onClose,
+  onTranslationUpdate,
+  theme,
+  showTranslationBox = true,
+  autoFocusInput = true
+}: SignLanguageCameraProps) {
   const [signTranslation, setSignTranslation] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -70,30 +74,16 @@ export default function TranslationScreen() {
   ]);
   const { hasPermission, requestPermission } = useCameraPermission();
 
-  const [textInput, setTextInput] = useState("");
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-
-  const player = useVideoPlayer(videoUrl, (player) => {
-    player.loop = false;
-    if (videoUrl) {
-      player.play();
-    }
-  });
-
-  useEffect(() => {
-    if (videoUrl && player) {
-      player.play();
-    }
-  }, [videoUrl, player]);
-
   useEffect(() => {
     try {
       if (HandLandmarks?.initModel) HandLandmarks.initModel();
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error(err); 
+    }
   }, []);
 
   useEffect(() => {
-    if (showCamera) {
+    if (autoFocusInput) {
       const interval = setInterval(() => {
         if (!hiddenInputRef.current?.isFocused()) {
           hiddenInputRef.current?.focus();
@@ -101,7 +91,7 @@ export default function TranslationScreen() {
       }, 2000);
       return () => clearInterval(interval);
     }
-  }, [showCamera]);
+  }, [autoFocusInput]);
 
   const startRecordingFlow = () => {
     if (isRecording || isProcessing || countdown > 0) return;
@@ -167,7 +157,9 @@ export default function TranslationScreen() {
         if (currentBuffer.length === SEQ_LEN && !isSending.current) {
           sendToBackend([...currentBuffer]);
         }
-      } catch (error) { console.error(error); }
+      } catch (error) { 
+        console.error(error); 
+      }
     });
     return () => sub.remove();
   }, [countdown]);
@@ -180,21 +172,29 @@ export default function TranslationScreen() {
       const res = await privateApi.post('/ai/tcn-recognize', { frames });
       const data = res.data;
       if (data.label && data.probability >= MIN_CONFIDENCE) {
-        setSignTranslation(prev => {
-          const words = prev.trim().split(' ');
-          if (words[words.length - 1] === data.label) return prev;
-          return prev ? `${prev} ${data.label}` : data.label;
-        });
+        const newTranslation = signTranslation 
+          ? `${signTranslation} ${data.label}` 
+          : data.label;
+        
+        // Check duplicate
+        const words = signTranslation.trim().split(' ');
+        if (words[words.length - 1] !== data.label) {
+          setSignTranslation(newTranslation);
+          onTranslationUpdate(newTranslation);
+        }
       }
-    } catch (e) { console.error(e); }
-    finally {
+    } catch (e) { 
+      console.error(e); 
+    } finally {
       keypointsBuffer.current = [];
       isRecordingRef.current = false;
       setIsRecording(false);
       setTimeout(() => {
         isSending.current = false;
         setIsProcessing(false);
-        hiddenInputRef.current?.focus();
+        if (autoFocusInput) {
+          hiddenInputRef.current?.focus();
+        }
       }, 200);
     }
   };
@@ -206,199 +206,107 @@ export default function TranslationScreen() {
     if (plugin != null) plugin.call(frame);
   }, []);
 
-  async function translateTextToVideo() {
-    if (!textInput.trim()) return;
-    Keyboard.dismiss();
-    try {
-      let response = await privateApi.post('/sign-video/translate', {
-        text: textInput.trim()
-      });
+  const handleClearTranslation = () => {
+    setSignTranslation('');
+    onTranslationUpdate('');
+  };
 
-
-      if (response?.data.videos && response?.data?.videos.length > 0) {
-        setVideoUrl(response?.data?.videos[0].mp4_url);
-      }
-    } catch (err) { Alert.alert("Error", "Network error."); }
+  if (!hasPermission || !device) {
+    return (
+      <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
+        <Text style={{ color: theme.text }}>Đang tải Camera...</Text>
+      </View>
+    );
   }
 
-  if (showCamera) {
   return (
-    <SignLanguageCamera
-      onClose={() => setShowCamera(false)}
-      onTranslationUpdate={(text) => setSignTranslation(text)}
-      theme={theme}
-      showTranslationBox={true}
-      autoFocusInput={true}
-    />
-  );
-}
+    <View style={styles.cameraContainer}>
+      {autoFocusInput && (
+        <TextInput
+          ref={hiddenInputRef}
+          style={styles.hiddenInput}
+          autoFocus={true}
+          showSoftInputOnFocus={false}
+          onSubmitEditing={startRecordingFlow}
+        />
+      )}
 
-  return (
-    <SafeAreaView style={[styles.mainContainer, { backgroundColor: theme.background }]}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={styles.contentContainer}>
-            {videoUrl ? (
-              <View style={styles.mediaContainer}>
-                <VideoView
-                  style={styles.videoPlayer}
-                  player={player}
-                  contentFit="contain"
-                  allowsPictureInPicture
-                />
-              </View>
-            ) : (
-              <View style={[
-                styles.mediaContainer,
-                styles.placeholderBox,
-                { borderColor: theme.lightGray, backgroundColor: theme.controlBG }
-              ]}>
-                <Ionicons
-                  name="videocam-outline"
-                  size={48}
-                  color={theme.icon}
-                  style={{ opacity: 0.5, marginBottom: 16 }}
-                />
-                <Text style={[styles.welcomeText, { color: theme.text }]}>Xin chào!</Text>
-                <Text style={[styles.subText, { color: theme.icon }]}>Nhập văn bản để tôi dịch sang ngôn ngữ ký hiệu nhé.</Text>
-              </View>
-            )}
-          </View>
-        </TouchableWithoutFeedback>
+      <Camera
+        style={StyleSheet.absoluteFill}
+        device={device}
+        format={format}
+        fps={30}
+        isActive={true}
+        frameProcessor={frameProcessor}
+        pixelFormat="yuv"
+        resizeMode="cover"
+      />
 
-        <View style={[
-          styles.bottomBarContainer,
-          {
-            backgroundColor: theme.background,
-            borderTopColor: theme.lightGray
-          }
-        ]}>
+      <HandLandmarksCanvas 
+        landmarks={handLandmarks} 
+        width={SCREEN_WIDTH} 
+        height={SCREEN_HEIGHT} 
+      />
 
-          <View style={[
-            styles.inputWrapper,
-            {
-              backgroundColor: theme.white,
-              borderColor: theme.lightGray
-            }
-          ]}>
-            <TextInput
-              style={[styles.textInput, { color: theme.text }]}
-              placeholder="Nhập nội dung..."
-              placeholderTextColor={theme.icon}
-              value={textInput}
-              onChangeText={setTextInput}
-              onSubmitEditing={translateTextToVideo}
-              returnKeyType="search"
-            />
+      <View style={styles.cameraHeader}>
+        <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+          <Ionicons name="close" size={28} color={theme.white} />
+        </TouchableOpacity>
+        <View style={styles.cameraStatusTag}>
+          <Text style={styles.cameraStatusText}>{statusMsg}</Text>
+        </View>
+      </View>
 
-            <TouchableOpacity onPress={() => setShowCamera(true)} style={styles.cameraIconBtn}>
-              <Ionicons name="camera" size={24} color={theme.icon} />
+      {countdown > 0 && (
+        <View style={styles.countdownOverlay}>
+          <Text style={[styles.countdownText, { color: theme.primary }]}>
+            {countdown}
+          </Text>
+        </View>
+      )}
+
+      <View style={styles.cameraBottomControls}>
+        {showTranslationBox && (
+          <View style={[styles.translationResultBox, { borderLeftColor: theme.primary }]}>
+            <Text style={[styles.resultLabel, { color: theme.primary }]}>DỊCH:</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <Text style={styles.resultText}>{signTranslation || "..."}</Text>
+            </ScrollView>
+            <TouchableOpacity 
+              onPress={handleClearTranslation} 
+              style={{ alignSelf: 'flex-end' }}
+            >
+              <Text style={{ color: theme.primary, fontSize: 12 }}>Xóa</Text>
             </TouchableOpacity>
           </View>
+        )}
 
-          <TouchableOpacity
-            style={[
-              styles.micButton,
-              {
-                backgroundColor: theme.primary,
-                shadowColor: theme.primary
-              }
-            ]}
-          >
-            <Ionicons name="mic" size={26} color={theme.white} />
-          </TouchableOpacity>
-
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        <TouchableOpacity
+          onPress={startRecordingFlow}
+          disabled={isProcessing || isRecording || countdown > 0}
+          style={[
+            styles.recordBtn,
+            { backgroundColor: theme.primary },
+            isRecording && styles.recordingActive,
+            handCount === 0 && styles.recordDisabled
+          ]}
+        >
+          {isProcessing ? (
+            <ActivityIndicator color={theme.white} />
+          ) : (
+            <Ionicons 
+              name={isRecording ? "stop" : "videocam"} 
+              size={32} 
+              color={theme.white} 
+            />
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-  },
-  contentContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 40,
-  },
-  mediaContainer: {
-    width: '90%',
-    aspectRatio: 3 / 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  videoPlayer: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'transparent',
-  },
-  placeholderBox: {
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  welcomeText: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subText: {
-    fontSize: 15,
-    textAlign: 'center',
-  },
-  bottomBarContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingBottom: Platform.OS === 'ios' ? 20 : 12,
-  },
-  inputWrapper: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 50,
-    borderRadius: 30,
-    paddingHorizontal: 20,
-    marginRight: 12,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 16,
-    height: '100%',
-  },
-  cameraIconBtn: {
-    padding: 5,
-    marginLeft: 5,
-  },
-  micButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
   cameraContainer: {
     flex: 1,
     backgroundColor: 'black'
@@ -412,7 +320,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     opacity: 0,
     width: 1,
-    height: 1
+    height: 1,
+    zIndex: -1
   },
   cameraHeader: {
     position: 'absolute',
