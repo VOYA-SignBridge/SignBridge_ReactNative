@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
-import { supabase } from '../../db/supabase';
+import { supabase } from '../db/supabase';
 import AsyncStorage  from '@react-native-async-storage/async-storage';
 import { privateApi } from '@/api/privateApi';
 export default function SignInScreen() {
@@ -10,7 +10,7 @@ export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSignIn = async () => {
+const handleSignIn = async () => {
   if (!email || !password) {
     Alert.alert("Thiếu thông tin", "Vui lòng nhập email và mật khẩu.");
     return;
@@ -36,7 +36,6 @@ export default function SignInScreen() {
 
   try {
     // 2. Gọi BE để get_or_create user
-    // /auth/me là endpoint mình gợi ý bên trên
     const res = await privateApi.get("/auth/me");
     console.log("User from backend:", res.data);
     await AsyncStorage.setItem("user_info", JSON.stringify(res.data));
