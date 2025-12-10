@@ -14,7 +14,7 @@ import {
 import { useTheme } from '../../contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { MOET_DATA } from '../../src/data/dictionaryData'; 
+import { MOET_DATA } from '../data/_dictionaryData'; 
 
 type DictionaryItem = {
   id: string;
