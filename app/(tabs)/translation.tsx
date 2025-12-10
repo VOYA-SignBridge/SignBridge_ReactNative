@@ -285,7 +285,7 @@ export default function TranslationScreen() {
             }
           ]}>
             <TextInput
-              style={[styles.textInput, { color: theme.text }]}
+              style={[styles.textInput, { color: "#000"  }]}
               placeholder="Nhập nội dung..."
               placeholderTextColor={theme.icon}
               value={textInput}

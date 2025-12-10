@@ -19,7 +19,7 @@
 
 // export default function RoomScreen() {
 //   const { code, participant_id, role, display_name, wsUrl } = useLocalSearchParams();
-  
+
 //   const [participants, setParticipants] = useState<Record<string, any>>({});
 //   const [messages, setMessages] = useState<any[]>([]);
 //   const [ws, setWs] = useState<WebSocket | null>(null);
@@ -28,7 +28,7 @@
 //   const [userInfo, setUserInfo] = useState<any | null>(null);
 //   // 🔥 Modal QR state
 //   const [showQRModal, setShowQRModal] = useState(false);
-  
+
 //   const flatListRef = useRef<FlatList>(null);
 
 //   console.log("RoomScreen mounted");
@@ -72,7 +72,7 @@
 //   // 🔥 Responsive video size theo platform
 //   const SCREEN_WIDTH = Dimensions.get("window").width;
 //   const isWeb = Platform.OS === 'web';
-  
+
 //   const getVideoWidth = () => {
 //     if (isWeb) {
 //       // Web: phân biệt mobile/desktop
@@ -90,7 +90,7 @@
 //       return SCREEN_WIDTH * 0.35; // Tablet: 35%
 //     }
 //   };
-  
+
 //   const VIDEO_WIDTH = getVideoWidth();
 //   const VIDEO_HEIGHT = VIDEO_WIDTH * (16 / 9);
 
@@ -260,7 +260,7 @@
 //                 .join(", ")}
 //             </Text>
 //           </View>
-          
+
 //           {/* Nút hiển thị QR */}
 //           <TouchableOpacity 
 //             style={styles.qrButton}
@@ -611,13 +611,13 @@
 
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState, useRef } from "react";
-import { 
-  View, 
-  Text, 
-  FlatList, 
-  StyleSheet, 
-  TextInput, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
   Dimensions,
   Modal,
   Platform
@@ -634,7 +634,7 @@ import { useTheme } from 'contexts/ThemeContext';
 export default function RoomScreen() {
   const { code, participant_id, role, display_name, wsUrl } = useLocalSearchParams();
   const { colors: theme } = useTheme();
-  
+
   const [participants, setParticipants] = useState<Record<string, any>>({});
   const [messages, setMessages] = useState<any[]>([]);
   const [ws, setWs] = useState<WebSocket | null>(null);
@@ -688,7 +688,7 @@ export default function RoomScreen() {
 
   const SCREEN_WIDTH = Dimensions.get("window").width;
   const isWeb = Platform.OS === 'web';
-  
+
   const getVideoWidth = () => {
     if (isWeb) {
       if (SCREEN_WIDTH < 768) {
@@ -703,7 +703,7 @@ export default function RoomScreen() {
       return SCREEN_WIDTH * 0.35;
     }
   };
-  
+
   const VIDEO_WIDTH = getVideoWidth();
   const VIDEO_HEIGHT = VIDEO_WIDTH * (16 / 9);
 
@@ -714,7 +714,7 @@ export default function RoomScreen() {
         const map: Record<string, Participant> = {};
         console.log("Participants loaded:", res.data);
         (res.data as Participant[]).forEach((p) => {
-          map[String(p.participant_id)] = p;  
+          map[String(p.participant_id)] = p;
         });
         setParticipants(map);
       } catch (err) {
@@ -789,10 +789,10 @@ export default function RoomScreen() {
         if (msg.type === "chat.message") {
           setMessages((prev) => [...prev, msg]);
         }
-        
+
         if (msg.type === "room.ended") {
           alert("Host has ended the room.");
-          try { socket?.close(); } catch (e) {}
+          try { socket?.close(); } catch (e) { }
           router.replace("/conversation");
           return;
         }
@@ -856,27 +856,27 @@ export default function RoomScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* HEADER */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: theme.background }]}>
         <View style={styles.headerTop}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.headerName}>Room: {code}</Text>
+            <Text style={[styles.headerName, {color: theme.text}]}>Room: {code}</Text>
             <Text style={styles.headerSub}>
               {Object.keys(participants).length} member(s): {Object.values(participants)
                 .map((p: any) => p.display_name)
                 .join(", ")}
             </Text>
           </View>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.qrButton}
             onPress={() => setShowQRModal(true)}
           >
             <Text style={styles.qrButtonText}>📱 QR</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.leaveBtn, { marginLeft: 10 }]}
             onPress={handleLeaveRoom}
           >
@@ -884,7 +884,7 @@ export default function RoomScreen() {
           </TouchableOpacity>
 
           {roomInfo?.owner_id === userInfo?.id && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.endBtn, { marginLeft: 10 }]}
               onPress={handleEndRoom}
             >
@@ -945,7 +945,7 @@ export default function RoomScreen() {
       />
 
       {/* INPUT ROW */}
-      <View style={styles.inputRow}>
+      <View style={[styles.inputRow, { backgroundColor: theme.background }]}>
         <TextInput
           value={text}
           onChangeText={setText}
@@ -955,7 +955,7 @@ export default function RoomScreen() {
         />
 
         {/* Camera Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => setShowCamera(true)}
           style={styles.cameraBtn}
         >
@@ -969,8 +969,8 @@ export default function RoomScreen() {
       </View>
 
       {/* CAMERA MODAL */}
-      <Modal 
-        visible={showCamera} 
+      <Modal
+        visible={showCamera}
         animationType="slide"
         onRequestClose={() => setShowCamera(false)}
       >
@@ -994,8 +994,8 @@ export default function RoomScreen() {
         onRequestClose={() => setShowQRModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Chia sẻ mã phòng</Text>
+          <View style={[styles.modalContent, { backgroundColor: theme.background }]}>
+            <Text style={[styles.modalTitle, {color: theme.text}]}>Chia sẻ mã phòng</Text>
 
             <View style={styles.qrContainer}>
               <QRCode
@@ -1004,8 +1004,8 @@ export default function RoomScreen() {
               />
             </View>
 
-            <View style={styles.codeBox}>
-              <Text style={styles.codeLabel}>Mã phòng:</Text>
+            <View style={[styles.codeBox, { backgroundColor: theme.background }]}>
+              <Text style={[styles.codeLabel, {color: theme.text}]}>Mã phòng:</Text>
               <Text style={styles.codeText}>{code}</Text>
             </View>
 
@@ -1027,9 +1027,8 @@ export default function RoomScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: "#F6F6F6" 
+  container: {
+    flex: 1,
   },
   header: {
     paddingTop: 50,
@@ -1037,19 +1036,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     backgroundColor: "white",
     borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
+    borderBottomColor: "#888",
   },
   headerTop: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  headerName: { 
-    fontSize: 20, 
+  headerName: {
+    fontSize: 20,
     fontWeight: "700",
     marginBottom: 4,
   },
-  headerSub: { 
+  headerSub: {
     color: "#888",
     fontSize: 13,
   },
@@ -1104,7 +1103,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "white",
     borderTopWidth: 1,
-    borderTopColor: "#DDD",
+    borderTopColor: "#888",
   },
   input: {
     flex: 1,
@@ -1130,7 +1129,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(49, 49, 49, 0.6)",
     alignItems: "center",
     justifyContent: "center",
   },

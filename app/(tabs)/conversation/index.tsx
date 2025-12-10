@@ -38,7 +38,7 @@ export default function ConversationScreen() {
 
   // Scanner state
   const [showScanner, setShowScanner] = useState(false);
-  
+
   //  Thêm flag để tránh join nhiều lần
   const [isJoining, setIsJoining] = useState(false);
   const { colors: theme } = useTheme();
@@ -90,7 +90,7 @@ export default function ConversationScreen() {
       console.log("Create room response", res.data);
 
       // Chủ phòng join luôn
-      await handleJoinRoom(code);      
+      await handleJoinRoom(code);
     } catch (err) {
       console.log("Create room error:", err);
       alert("Không thể tạo phòng. Vui lòng thử lại!");
@@ -125,7 +125,7 @@ export default function ConversationScreen() {
 
     console.log("Scanned code:", code);
     setIsJoining(true); // 🔥 Set flag
-    
+
     // Join phòng ngay lập tức
     try {
       const res = await privateApi.post<JoinRoomResponse>(
@@ -169,7 +169,7 @@ export default function ConversationScreen() {
   }
 
   return (
-    <View style={{ padding: 20, marginTop: 50 , backgroundColor: theme.background}}>
+    <View style={{ flex: 1, padding: 20, backgroundColor: theme.background, justifyContent: "center" }}>
       <Text style={{ fontSize: 22, fontWeight: "700" }}>Conversation</Text>
 
       {/* CREATE ROOM */}
@@ -180,6 +180,7 @@ export default function ConversationScreen() {
       {/* JOIN BY CODE */}
       <TextInput
         placeholder="Nhập mã phòng"
+        placeholderTextColor= {theme.text}
         value={roomCode}
         onChangeText={setRoomCode}
         style={styles.input}
