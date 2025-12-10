@@ -170,7 +170,7 @@ export default function ConversationScreen() {
 
   return (
     <View style={{ flex: 1, padding: 20, backgroundColor: theme.background, justifyContent: "center" }}>
-      <Text style={{ fontSize: 22, fontWeight: "700" }}>Conversation</Text>
+      <Text style={{ fontSize: 22, fontWeight: "700", color: theme.text }}>Trò chuyện</Text>
 
       {/* CREATE ROOM */}
       <TouchableOpacity onPress={handleCreateRoom} style={styles.button}>
@@ -199,7 +199,7 @@ export default function ConversationScreen() {
         onPress={() => setShowScanner(true)}
         style={[styles.button, { marginTop: 16, backgroundColor: "#0F9CF5" }]}
       >
-        <Text style={styles.buttonText}>📷 Quét mã QR để tham gia</Text>
+        <Text style={styles.buttonText}>Quét mã QR để tham gia</Text>
       </TouchableOpacity>
 
       {/* MODAL QR CODE */}

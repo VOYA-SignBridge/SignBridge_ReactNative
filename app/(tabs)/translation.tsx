@@ -214,24 +214,25 @@ export default function TranslationScreen() {
         text: textInput.trim()
       });
 
-
       if (response?.data.videos && response?.data?.videos.length > 0) {
         setVideoUrl(response?.data?.videos[0].mp4_url);
       }
     } catch (err) { Alert.alert("Error", "Network error."); }
   }
 
+  const hasText = textInput.trim().length > 0;
+
   if (showCamera) {
-  return (
-    <SignLanguageCamera
-      onClose={() => setShowCamera(false)}
-      onTranslationUpdate={(text) => setSignTranslation(text)}
-      theme={theme}
-      showTranslationBox={true}
-      autoFocusInput={true}
-    />
-  );
-}
+    return (
+      <SignLanguageCamera
+        onClose={() => setShowCamera(false)}
+        onTranslationUpdate={(text) => setSignTranslation(text)}
+        theme={theme}
+        showTranslationBox={true}
+        autoFocusInput={true}
+      />
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.mainContainer, { backgroundColor: theme.background }]}>
@@ -263,7 +264,7 @@ export default function TranslationScreen() {
                   style={{ opacity: 0.5, marginBottom: 16 }}
                 />
                 <Text style={[styles.welcomeText, { color: theme.text }]}>Xin chào!</Text>
-                <Text style={[styles.subText, { color: theme.icon }]}>Nhập văn bản để tôi dịch sang ngôn ngữ ký hiệu nhé.</Text>
+                <Text style={[styles.subText, { color: theme.icon }]}>Nhập văn bản để tôi dịch sang{'\n'}ngôn ngữ ký hiệu nhé.</Text>
               </View>
             )}
           </View>
@@ -280,35 +281,42 @@ export default function TranslationScreen() {
           <View style={[
             styles.inputWrapper,
             {
-              backgroundColor: theme.white,
+              backgroundColor: theme.textInputBG,
               borderColor: theme.lightGray
             }
           ]}>
             <TextInput
-              style={[styles.textInput, { color: "#000"  }]}
+              style={[styles.textInput, { color: theme.text }]}
               placeholder="Nhập nội dung..."
               placeholderTextColor={theme.icon}
               value={textInput}
               onChangeText={setTextInput}
               onSubmitEditing={translateTextToVideo}
-              returnKeyType="search"
+              returnKeyType="send"
             />
 
-            <TouchableOpacity onPress={() => setShowCamera(true)} style={styles.cameraIconBtn}>
-              <Ionicons name="camera" size={24} color={theme.icon} />
+            <TouchableOpacity style={styles.iconBtn}>
+              <Ionicons name="mic" size={22} color={theme.icon} />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setShowCamera(true)} style={styles.iconBtn}>
+              <Ionicons name="camera" size={22} color={theme.icon} />
             </TouchableOpacity>
           </View>
 
           <TouchableOpacity
+            onPress={translateTextToVideo}
+            disabled={!hasText}
             style={[
-              styles.micButton,
+              styles.sendButton,
               {
-                backgroundColor: theme.primary,
-                shadowColor: theme.primary
+                backgroundColor: hasText ? theme.primary : theme.lightGray,
+                shadowColor: hasText ? theme.primary : 'transparent',
+                elevation: hasText ? 5 : 0
               }
             ]}
           >
-            <Ionicons name="mic" size={26} color={theme.white} />
+            <Ionicons name="send" size={22} color={theme.white} style={{ marginLeft: 2 }} />
           </TouchableOpacity>
 
         </View>
@@ -370,7 +378,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 50,
     borderRadius: 30,
-    paddingHorizontal: 20,
+    paddingLeft: 20,
+    paddingRight: 10,
     marginRight: 12,
     borderWidth: 1,
     shadowColor: "#000",
@@ -384,11 +393,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     height: '100%',
   },
-  cameraIconBtn: {
-    padding: 5,
-    marginLeft: 5,
+  iconBtn: {
+    padding: 8,
+    marginLeft: 2,
   },
-  micButton: {
+  sendButton: {
     width: 50,
     height: 50,
     borderRadius: 25,
@@ -397,7 +406,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
-    elevation: 5,
   },
   cameraContainer: {
     flex: 1,

@@ -22,7 +22,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="translation"
         options={{
-          title: 'Translation',
+          title: 'Phiên dịch',
           tabBarIcon: ({ color }) => (
             <Ionicons name="language-outline" size={24} color={color} />
           ),
@@ -31,7 +31,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="conversation"
         options={{
-          title: 'Conversation',
+          title: 'Trò chuyện',
           tabBarIcon: ({ color }) => (
             <Ionicons name="chatbubble-ellipses-outline" size={24} color={color} />
           ),
@@ -40,7 +40,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="dictionary"
         options={{
-          title: 'Dictionary',
+          title: 'Từ điển',
           tabBarIcon: ({ color }) => (
             <Ionicons name="book-outline" size={24} color={color} />
           ),
@@ -49,7 +49,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="account"
         options={{
-          title: 'Account',
+          title: 'Cài đặt',
           tabBarIcon: ({ color }) => (
             <Ionicons name="settings-outline" size={24} color={color} />
           ),
