@@ -1,11 +1,9 @@
-// app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContext'; // <-- Import hook
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function TabsLayout() {
-  // Lấy ra màu sắc động từ context
   const { colors } = useTheme();
 
   return (
@@ -13,12 +11,11 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         
-        // === ÁP DỤNG MÀU ĐỘNG ===
-        tabBarActiveTintColor: colors.tabIconSelected, // <-- Đổi
-        tabBarInactiveTintColor: colors.tabIconDefault, // <-- Đổi
+        tabBarActiveTintColor: colors.tabIconSelected, 
+        tabBarInactiveTintColor: colors.tabIconDefault,
         tabBarStyle: {
-          backgroundColor: colors.background, // <-- Đổi màu nền Tab bar
-          borderTopColor: colors.textInputBG, // (Ví dụ, dùng màu nền input)
+          backgroundColor: colors.background,
+          borderTopColor: colors.textInputBG,
         },
       }}
     >
@@ -41,11 +38,11 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="avatar"
+        name="dictionary"
         options={{
-          title: 'Avatar',
+          title: 'Dictionary',
           tabBarIcon: ({ color }) => (
-            <Ionicons name="person-outline" size={24} color={color} />
+            <Ionicons name="book-outline" size={24} color={color} />
           ),
         }}
       />
