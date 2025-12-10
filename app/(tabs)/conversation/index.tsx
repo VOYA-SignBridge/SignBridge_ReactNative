@@ -8,11 +8,17 @@ import {
   TouchableOpacity,
   Modal,
   StyleSheet,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard
 } from "react-native";
 import { privateApi } from "@/api/privateApi";
 import { API_URL } from "@/config";
 import QRCode from "react-native-qrcode-svg";
 import { useTheme } from "contexts/ThemeContext";
+
 type CreateRoomResponse = {
   code: string;
 };
@@ -31,18 +37,12 @@ export default function ConversationScreen() {
   const router = useRouter();
   const [roomCode, setRoomCode] = useState("");
   const ttl_minutes = 120;
-
-  // QR state
   const [createdCode, setCreatedCode] = useState<string | null>(null);
   const [showQRModal, setShowQRModal] = useState(false);
-
-  // Scanner state
   const [showScanner, setShowScanner] = useState(false);
-
-  //  Thêm flag để tránh join nhiều lần
   const [isJoining, setIsJoining] = useState(false);
   const { colors: theme } = useTheme();
-  // JOIN ROOM
+
   const handleJoinRoom = async (overrideCode?: string) => {
     const code = (overrideCode || roomCode).trim();
     if (!code) return;
@@ -72,12 +72,10 @@ export default function ConversationScreen() {
         },
       });
     } catch (err) {
-      console.log("Join room error:", err);
       alert("Không thể tham gia phòng. Vui lòng thử lại!");
     }
   };
 
-  // CREATE ROOM
   const handleCreateRoom = async () => {
     try {
       const res = await privateApi.post<CreateRoomResponse>(
@@ -87,31 +85,20 @@ export default function ConversationScreen() {
       );
 
       const code = res.data.code;
-      console.log("Create room response", res.data);
-
-      // Chủ phòng join luôn
       await handleJoinRoom(code);
     } catch (err) {
-      console.log("Create room error:", err);
       alert("Không thể tạo phòng. Vui lòng thử lại!");
     }
   };
 
-  // HANDLE SCAN - TỰ ĐỘNG JOIN
   const handleBarCodeScanned = async (data: string | null) => {
-    // 🔥 Chặn nếu đang join
-    if (isJoining) {
-      console.log("Already joining, ignoring scan...");
-      return;
-    }
+    if (isJoining) return;
 
     if (!data) {
-      // User đóng scanner
       setShowScanner(false);
       return;
     }
 
-    // Parse code từ URL hoặc dùng trực tiếp
     let code = data;
     try {
       if (data.startsWith("http")) {
@@ -119,14 +106,10 @@ export default function ConversationScreen() {
         const parts = url.pathname.split("/");
         code = parts[parts.length - 1];
       }
-    } catch (e) {
-      console.log("Parse URL error:", e);
-    }
+    } catch (e) { }
 
-    console.log("Scanned code:", code);
-    setIsJoining(true); // 🔥 Set flag
+    setIsJoining(true);
 
-    // Join phòng ngay lập tức
     try {
       const res = await privateApi.post<JoinRoomResponse>(
         `/rooms/${code}/join?role=normal`
@@ -141,10 +124,8 @@ export default function ConversationScreen() {
         `&role=${participant.role}` +
         `&display_name=${encodeURIComponent(participant.display_name)}`;
 
-      // Đóng scanner trước khi navigate
       setShowScanner(false);
 
-      // Navigate vào phòng
       router.push({
         pathname: "/conversation/room/[code]",
         params: {
@@ -156,118 +137,266 @@ export default function ConversationScreen() {
         },
       });
     } catch (err) {
-      console.log("Join room error:", err);
       setShowScanner(false);
-      setIsJoining(false); // 🔥 Reset flag nếu lỗi
+      setIsJoining(false);
       alert("Không thể tham gia phòng. Mã QR có thể không hợp lệ!");
     }
   };
 
-  // Nếu đang mở scanner → render full-screen scanner
   if (showScanner) {
     return <QRScanner onScanned={handleBarCodeScanned} />;
   }
 
   return (
-    <View style={{ flex: 1, padding: 20, backgroundColor: theme.background, justifyContent: "center" }}>
-      <Text style={{ fontSize: 22, fontWeight: "700", color: theme.text }}>Trò chuyện</Text>
-
-      {/* CREATE ROOM */}
-      <TouchableOpacity onPress={handleCreateRoom} style={styles.button}>
-        <Text style={styles.buttonText}>Tạo phòng mới</Text>
-      </TouchableOpacity>
-
-      {/* JOIN BY CODE */}
-      <TextInput
-        placeholder="Nhập mã phòng"
-        placeholderTextColor= {theme.text}
-        value={roomCode}
-        onChangeText={setRoomCode}
-        style={styles.input}
-        autoCapitalize="characters"
-      />
-
-      <TouchableOpacity
-        onPress={() => handleJoinRoom()}
-        style={[styles.button, { marginTop: 10 }]}
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
       >
-        <Text style={styles.buttonText}>Tham gia phòng</Text>
-      </TouchableOpacity>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.content}>
+            
+            <View style={styles.headerSection}>
+              <Text style={[styles.title, { color: theme.text }]}>Trò chuyện</Text>
+              <Text style={[styles.subtitle, { color: theme.icon }]}>
+                Bắt đầu trò chuyện bằng cách nhập mã hoặc quét QR.
+              </Text>
+            </View>
 
-      {/* JOIN BY QR */}
-      <TouchableOpacity
-        onPress={() => setShowScanner(true)}
-        style={[styles.button, { marginTop: 16, backgroundColor: "#0F9CF5" }]}
-      >
-        <Text style={styles.buttonText}>Quét mã QR để tham gia</Text>
-      </TouchableOpacity>
+            <View style={[styles.inputGroup, { backgroundColor: theme.controlBG || '#f9f9f9' }]}>
+              <TextInput
+                placeholder="Nhập mã phòng (VD: ABC12)"
+                placeholderTextColor={theme.icon}
+                value={roomCode}
+                onChangeText={setRoomCode}
+                style={[
+                  styles.input, 
+                  { 
+                    color: theme.text, 
+                    backgroundColor: theme.background,
+                    borderColor: theme.lightGray || '#e0e0e0'
+                  }
+                ]}
+                autoCapitalize="characters"
+              />
+              
+              <TouchableOpacity
+                onPress={() => handleJoinRoom()}
+                style={[styles.mainButton, { backgroundColor: theme.primary }]}
+              >
+                <Text style={styles.mainButtonText}>Tham gia ngay</Text>
+              </TouchableOpacity>
+            </View>
 
-      {/* MODAL QR CODE */}
+            <View style={styles.divider}>
+              <View style={[styles.line, { backgroundColor: theme.lightGray || '#eee' }]} />
+              <Text style={[styles.orText, { color: theme.icon }]}>Hoặc</Text>
+              <View style={[styles.line, { backgroundColor: theme.lightGray || '#eee' }]} />
+            </View>
+
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                onPress={handleCreateRoom}
+                style={[styles.filledButton, { backgroundColor: '#34D399' }]}
+              >
+                <Text style={styles.filledButtonText}>Tạo phòng mới</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setShowScanner(true)}
+                style={[styles.filledButton, { backgroundColor: '#3B82F6' }]}
+              >
+                <Text style={styles.filledButtonText}>Quét mã QR</Text>
+              </TouchableOpacity>
+            </View>
+
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+
       <Modal
         visible={showQRModal && !!createdCode}
         transparent
-        animationType="slide"
+        animationType="fade"
         onRequestClose={() => setShowQRModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
-              Chia sẻ mã QR này để mời người khác
+          <View style={[styles.modalContent, { backgroundColor: theme.background }]}>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
+              Mã phòng
             </Text>
+            
+            <View style={styles.qrContainer}>
+              {createdCode && (
+                <QRCode
+                  value={`${API_URL}/join/${createdCode}`}
+                  size={200}
+                  backgroundColor="white"
+                  color="black"
+                />
+              )}
+            </View>
 
-            {createdCode && (
-              <QRCode
-                value={`${API_URL}/join/${createdCode}`}
-                size={220}
-              />
-            )}
-
-            <Text style={{ marginTop: 12, fontSize: 16, fontWeight: "600" }}>
-              Mã phòng: {createdCode}
+            <Text style={[styles.codeText, { color: theme.primary }]}>
+              {createdCode}
             </Text>
 
             <TouchableOpacity
-              style={[styles.button, { marginTop: 16 }]}
+              style={[styles.closeButton, { backgroundColor: theme.lightGray || '#eee' }]}
               onPress={() => setShowQRModal(false)}
             >
-              <Text style={styles.buttonText}>Đóng</Text>
+              <Text style={[styles.closeButtonText, { color: theme.text }]}>Đóng</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
-    padding: 15,
-    backgroundColor: "#25CCC5",
-    marginTop: 20,
-    borderRadius: 8,
+  container: {
+    flex: 1,
   },
-  buttonText: {
-    textAlign: "center",
-    color: "white",
-    fontWeight: "700",
+  content: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+  },
+  headerSection: {
+    marginBottom: 30,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "800",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    lineHeight: 24,
+    opacity: 0.8,
+  },
+  
+  inputGroup: {
+    padding: 20,
+    borderRadius: 20,
+    marginBottom: 25,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
   },
   input: {
+    height: 56,
     borderWidth: 1,
-    padding: 10,
-    marginTop: 20,
-    borderRadius: 8,
-    borderColor: "#ddd",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 17,
+    fontWeight: "500",
+    marginBottom: 16,
   },
+  mainButton: {
+    height: 54,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  mainButtonText: {
+    color: 'white',
+    fontSize: 17,
+    fontWeight: "700",
+  },
+
+  // Divider
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 25,
+    paddingHorizontal: 10,
+  },
+  line: {
+    flex: 1,
+    height: 1,
+  },
+  orText: {
+    paddingHorizontal: 16,
+    fontSize: 14,
+    fontWeight: "600",
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+
+  // Other Actions
+  actionButtons: {
+    gap: 14,
+  },
+  filledButton: {
+    height: 54,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // Tạo hiệu ứng nổi nhẹ
+    shadowColor: "#000", 
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  filledButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: "700",
+  },
+
+  // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0,0,0,0.6)",
     alignItems: "center",
     justifyContent: "center",
+    padding: 20,
   },
   modalContent: {
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 12,
+    width: '100%',
+    maxWidth: 320,
+    padding: 24,
+    borderRadius: 24,
     alignItems: "center",
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: 20,
+  },
+  qrContainer: {
+    padding: 16,
+    backgroundColor: 'white',
+    borderRadius: 16,
+    marginBottom: 20,
+    elevation: 2,
+  },
+  codeText: {
+    fontSize: 32,
+    fontWeight: "800",
+    letterSpacing: 3,
+    marginBottom: 24,
+  },
+  closeButton: {
+    width: '100%',
+    height: 50,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
