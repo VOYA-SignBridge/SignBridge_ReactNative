@@ -498,7 +498,7 @@ export default function SignLanguageCamera({
   const backDevice = useCameraDevice('back');
   const frontDevice = useCameraDevice('front');
   
-  // Thử dùng camera sau trước, nếu không có thì dùng camera trước
+  // Thử dùng camera  trước, nếu không có thì dùng camera sau
   const device = frontDevice ?? backDevice;
   
   const format = useCameraFormat(device, [
@@ -568,7 +568,7 @@ export default function SignLanguageCamera({
   return () => {
     isMounted = false;
   };
-}, [hasPermission, device, requestPermission]);
+  }, [hasPermission, device, requestPermission]);
 
 
   useEffect(() => {

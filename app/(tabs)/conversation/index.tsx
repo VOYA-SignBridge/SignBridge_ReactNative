@@ -169,8 +169,8 @@ export default function ConversationScreen() {
   }
 
   return (
-    <View style={{ padding: 20, marginTop: 50 , backgroundColor: theme.background}}>
-      <Text style={{ fontSize: 22, fontWeight: "700" }}>Conversation</Text>
+    <View style={{ padding: 20, marginTop: 50 , flex: 1, backgroundColor: theme.background}}>
+      <Text style={{ fontSize: 22, fontWeight: "700" , color: theme.text}}>Conversation</Text>
 
       {/* CREATE ROOM */}
       <TouchableOpacity onPress={handleCreateRoom} style={styles.button}>
@@ -183,6 +183,8 @@ export default function ConversationScreen() {
         value={roomCode}
         onChangeText={setRoomCode}
         style={styles.input}
+        placeholderTextColor="#ccc"
+      
         autoCapitalize="characters"
       />
 

@@ -3,7 +3,7 @@ import { useTheme } from "contexts/ThemeContext";
 export default function ConversationLayout() {
   const { colors: theme } = useTheme();
   return (
-    <Stack screenOptions={{ headerShown: false, headerStyle: { backgroundColor: theme.background } }}>
+    <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="room/[code]" />
     </Stack>

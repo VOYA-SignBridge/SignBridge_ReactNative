@@ -5,15 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9372498b-0389-4af9-ab5c-818dd8495d7c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/app.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/_layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/_layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/auth/signin.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/auth/signin.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/auth/signup.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/auth/signup.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(tabs)/conversation/_layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/conversation/_layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(tabs)/conversation/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/conversation/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(tabs)/conversation/room/[code].tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/conversation/room/[code].tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/SignLanguageCamera.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/SignLanguageCamera.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/config.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -705,7 +705,7 @@ export default function RoomScreen() {
   };
   
   const VIDEO_WIDTH = getVideoWidth();
-  const VIDEO_HEIGHT = VIDEO_WIDTH * (16 / 9);
+  const VIDEO_HEIGHT = VIDEO_WIDTH * (3.55 / 2);
 
   useEffect(() => {
     async function loadParticipants() {
@@ -856,12 +856,12 @@ export default function RoomScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* HEADER */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: theme.background }]}>
         <View style={styles.headerTop}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.headerName}>Room: {code}</Text>
+            <Text style={[styles.headerName,{ color: theme.text}]}>Room: {code}</Text>
             <Text style={styles.headerSub}>
               {Object.keys(participants).length} member(s): {Object.values(participants)
                 .map((p: any) => p.display_name)
@@ -945,12 +945,12 @@ export default function RoomScreen() {
       />
 
       {/* INPUT ROW */}
-      <View style={styles.inputRow}>
+      <View style={[styles.inputRow, { backgroundColor: theme.background }]}>
         <TextInput
           value={text}
           onChangeText={setText}
           placeholder="Type message..."
-          style={styles.input}
+          style={[styles.input, { backgroundColor: theme.background, color: theme.textInputBG }]}
           onSubmitEditing={sendMessage}
         />
 
