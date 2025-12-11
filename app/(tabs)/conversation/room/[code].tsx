@@ -23,11 +23,22 @@ import SignLanguageCamera from '@/components/SignLanguageCamera';
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from 'contexts/ThemeContext';
 
+type Participant = {
+  participant_id: number;
+  user_id: number | string | null;
+  display_name: string;
+  role: string;
+  joined_at: string;
+};
+
 export default function RoomScreen() {
   const { code, participant_id, role, display_name, wsUrl } = useLocalSearchParams();
   const { colors: theme } = useTheme();
 
-  const [participants, setParticipants] = useState<Record<string, any>>({});
+  const isDark = theme.background === '#000000' || theme.text === '#FFFFFF';
+  const borderColor = isDark ? 'transparent' : '#E5E5E5';
+
+  const [participants, setParticipants] = useState<Record<string, Participant>>({});
   const [messages, setMessages] = useState<any[]>([]);
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [text, setText] = useState("");
@@ -35,16 +46,9 @@ export default function RoomScreen() {
   const [userInfo, setUserInfo] = useState<any | null>(null);
   const [showQRModal, setShowQRModal] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [showParticipantsModal, setShowParticipantsModal] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
-
-  type Participant = {
-    participant_id: number;
-    user_id: number | string | null;
-    display_name: string;
-    role: string;
-    joined_at: string;
-  };
 
   useEffect(() => {
     async function loadRoomInfo() {
@@ -129,9 +133,11 @@ export default function RoomScreen() {
         setParticipants((prev) => ({
           ...prev,
           [String(participant_id)]: {
-            participant_id,
-            display_name,
-            role,
+            participant_id: Number(participant_id),
+            display_name: String(display_name),
+            role: String(role),
+            user_id: null, 
+            joined_at: new Date().toISOString()
           },
         }));
       };
@@ -212,7 +218,7 @@ export default function RoomScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top', 'left', 'right']}>
-      <StatusBar barStyle={theme.background === '#000000' ? 'light-content' : 'dark-content'} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -220,8 +226,7 @@ export default function RoomScreen() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
         
-        {/* HEADER */}
-        <View style={[styles.header, { backgroundColor: theme.background, borderBottomColor: theme.lightGray || '#eee' }]}>
+        <View style={[styles.header, { backgroundColor: theme.background, borderBottomColor: borderColor }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="chevron-back" size={28} color={theme.text} />
           </TouchableOpacity>
@@ -230,13 +235,19 @@ export default function RoomScreen() {
             <Text style={[styles.headerTitle, { color: theme.text }]} numberOfLines={1}>
               {code}
             </Text>
-            <Text style={[styles.headerSubtitle, { color: theme.icon }]} numberOfLines={1}>
-              {Object.keys(participants).length} thành viên
-            </Text>
+            <TouchableOpacity onPress={() => setShowParticipantsModal(true)} style={styles.subtitleBtn}>
+              <Text numberOfLines={1}>
+                <Text style={[styles.headerSubtitle, { color: theme.icon }]}>
+                    {Object.keys(participants).length} thành viên •{" "}
+                </Text>
+                <Text style={[styles.headerSubtitle, { color: theme.primary, fontWeight: '600' }]}>
+                    Chạm để xem
+                </Text>
+              </Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.headerActions}>
-            {/* Nút Mã QR - Màu Primary */}
             <TouchableOpacity 
               style={[styles.headerBtn, { backgroundColor: theme.primary }]} 
               onPress={() => setShowQRModal(true)}
@@ -244,17 +255,16 @@ export default function RoomScreen() {
               <Text style={styles.headerBtnText}>Mã QR</Text>
             </TouchableOpacity>
 
-            {/* Nút Kết thúc/Rời phòng */}
             {roomInfo?.owner_id === userInfo?.id ? (
               <TouchableOpacity 
-                style={[styles.headerBtn, { backgroundColor: '#EF4444' }]} // Màu đỏ cho nút Kết thúc
+                style={[styles.headerBtn, { backgroundColor: '#EF4444' }]} 
                 onPress={handleEndRoom}
               >
                 <Text style={styles.headerBtnText}>Kết thúc</Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity 
-                style={[styles.headerBtn, { backgroundColor: theme.icon || '#999' }]} // Màu xám cho nút Rời
+                style={[styles.headerBtn, { backgroundColor: theme.icon || '#999' }]}
                 onPress={handleLeaveRoom}
               >
                 <Text style={styles.headerBtnText}>Rời phòng</Text>
@@ -263,7 +273,6 @@ export default function RoomScreen() {
           </View>
         </View>
 
-        {/* CHAT LIST */}
         <FlatList
           ref={flatListRef}
           style={[styles.chatList, { backgroundColor: theme.controlBG || '#f4f4f5' }]}
@@ -322,8 +331,7 @@ export default function RoomScreen() {
           }}
         />
 
-        {/* INPUT BAR */}
-        <View style={[styles.inputContainer, { backgroundColor: theme.background, borderTopColor: theme.lightGray || '#eee' }]}>
+        <View style={[styles.inputContainer, { backgroundColor: theme.background, borderTopColor: borderColor }]}>
           <TouchableOpacity 
             style={styles.cameraButton} 
             onPress={() => setShowCamera(true)}
@@ -353,7 +361,6 @@ export default function RoomScreen() {
 
       </KeyboardAvoidingView>
 
-      {/* MODALS */}
       <Modal visible={showCamera} animationType="slide" onRequestClose={() => setShowCamera(false)}>
         <SignLanguageCamera
           onClose={() => setShowCamera(false)}
@@ -391,6 +398,44 @@ export default function RoomScreen() {
         </View>
       </Modal>
 
+      <Modal visible={showParticipantsModal} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowParticipantsModal(false)}>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: borderColor }]}>
+                <Text style={[styles.modalHeaderTitle, { color: theme.text }]}>Thành viên ({Object.keys(participants).length})</Text>
+                <TouchableOpacity onPress={() => setShowParticipantsModal(false)} style={styles.closeModalIcon}>
+                     <Ionicons name="close" size={24} color={theme.text} />
+                </TouchableOpacity>
+            </View>
+            
+            <FlatList
+                data={Object.values(participants)}
+                keyExtractor={(item) => String(item.participant_id)}
+                contentContainerStyle={{ padding: 16 }}
+                renderItem={({ item }) => {
+                    const isMe = String(item.participant_id) === String(participant_id);
+                    const isOwner = item.role === 'owner';
+                    
+                    return (
+                        <View style={[styles.participantRow, { borderBottomColor: borderColor }]}>
+                            <View style={[styles.avatarLarge, { backgroundColor: isMe ? theme.primary : '#ccc' }]}>
+                                <Text style={styles.avatarTextLarge}>{getInitials(item.display_name)}</Text>
+                            </View>
+                            <View style={styles.participantInfo}>
+                                <Text style={[styles.participantName, { color: theme.text }]}>
+                                    {item.display_name} {isMe && "(Bạn)"}
+                                </Text>
+                                <Text style={[styles.participantRole, { color: theme.icon }]}>
+                                    {isOwner ? "Chủ phòng" : "Thành viên"}
+                                </Text>
+                            </View>
+                            {isOwner && <Ionicons name="key" size={16} color="#F59E0B" />}
+                        </View>
+                    );
+                }}
+            />
+        </SafeAreaView>
+      </Modal>
+
     </SafeAreaView>
   );
 }
@@ -399,7 +444,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  // HEADER
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -417,20 +461,22 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
   },
+  subtitleBtn: {
+    marginTop: 2,
+    alignSelf: 'flex-start',
+  },
   headerSubtitle: {
     fontSize: 12,
-    marginTop: 2,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  // Style cho nút bấm dạng Text trong Header
   headerBtn: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 20, // Bo tròn dạng viên thuốc
+    borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -439,8 +485,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
-
-  // CHAT LIST
   chatList: {
     flex: 1,
     paddingHorizontal: 12,
@@ -512,8 +556,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
   },
-
-  // INPUT
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -547,8 +589,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 8,
   },
-
-  // MODAL
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -599,5 +639,49 @@ const styles = StyleSheet.create({
   modalCloseText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+  },
+  modalHeaderTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  closeModalIcon: {
+    padding: 4,
+  },
+  participantRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  avatarLarge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  avatarTextLarge: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  participantInfo: {
+    flex: 1,
+  },
+  participantName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  participantRole: {
+    fontSize: 13,
+    marginTop: 2,
   },
 });
