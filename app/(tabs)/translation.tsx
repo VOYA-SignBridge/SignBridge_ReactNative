@@ -3,12 +3,9 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   StyleSheet,
   NativeEventEmitter,
   NativeModules,
-  Dimensions,
-  ActivityIndicator,
   TextInput,
   TouchableWithoutFeedback,
   Alert,
@@ -18,7 +15,6 @@ import {
   Keyboard
 } from 'react-native';
 import {
-  Camera,
   useCameraDevice,
   useCameraPermission,
   VisionCameraProxy,
@@ -221,6 +217,8 @@ export default function TranslationScreen() {
   }
 
   const hasText = textInput.trim().length > 0;
+  
+  const inputBackgroundColor = theme.background === '#000000' ? '#1c1c1e' : '#F2F2F7';
 
   if (showCamera) {
     return (
@@ -264,7 +262,9 @@ export default function TranslationScreen() {
                   style={{ opacity: 0.5, marginBottom: 16 }}
                 />
                 <Text style={[styles.welcomeText, { color: theme.text }]}>Xin chào!</Text>
-                <Text style={[styles.subText, { color: theme.icon }]}>Nhập văn bản để tôi dịch sang{'\n'}ngôn ngữ ký hiệu nhé.</Text>
+                <Text style={[styles.subText, { color: theme.icon }]}>
+                  {"Nhập văn bản để tôi dịch sang\nngôn ngữ ký hiệu nhé."}
+                </Text>
               </View>
             )}
           </View>
@@ -274,15 +274,26 @@ export default function TranslationScreen() {
           styles.bottomBarContainer,
           {
             backgroundColor: theme.background,
-            borderTopColor: theme.lightGray
+            borderTopColor: 'transparent' 
           }
         ]}>
 
+          {/* Icon Camera bên ngoài - Size nhỏ hơn */}
+          <TouchableOpacity onPress={() => setShowCamera(true)} style={styles.iconBtnOutside}>
+            <Ionicons name="camera" size={22} color={theme.primary} />
+          </TouchableOpacity>
+
+          {/* Icon Mic bên ngoài - Size nhỏ hơn */}
+          <TouchableOpacity style={styles.iconBtnOutside}>
+            <Ionicons name="mic" size={22} color={theme.primary} />
+          </TouchableOpacity>
+
+          {/* Input Wrapper - Height nhỏ hơn */}
           <View style={[
             styles.inputWrapper,
             {
-              backgroundColor: theme.textInputBG,
-              borderColor: theme.lightGray
+              backgroundColor: inputBackgroundColor,
+              borderColor: 'transparent'
             }
           ]}>
             <TextInput
@@ -294,14 +305,6 @@ export default function TranslationScreen() {
               onSubmitEditing={translateTextToVideo}
               returnKeyType="send"
             />
-
-            <TouchableOpacity style={styles.iconBtn}>
-              <Ionicons name="mic" size={22} color={theme.icon} />
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => setShowCamera(true)} style={styles.iconBtn}>
-              <Ionicons name="camera" size={22} color={theme.icon} />
-            </TouchableOpacity>
           </View>
 
           <TouchableOpacity
@@ -310,13 +313,13 @@ export default function TranslationScreen() {
             style={[
               styles.sendButton,
               {
-                backgroundColor: hasText ? theme.primary : theme.lightGray,
+                backgroundColor: hasText ? theme.primary : inputBackgroundColor,
                 shadowColor: hasText ? theme.primary : 'transparent',
                 elevation: hasText ? 5 : 0
               }
             ]}
           >
-            <Ionicons name="send" size={22} color={theme.white} style={{ marginLeft: 2 }} />
+            <Ionicons name="send" size={20} color={hasText ? theme.white : theme.icon} style={{ marginLeft: hasText ? 2 : 0 }} />
           </TouchableOpacity>
 
         </View>
@@ -364,43 +367,39 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   bottomBarContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 12, // Giảm padding ngoài để thêm chỗ cho input
+    paddingVertical: 10,
     borderTopWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingBottom: Platform.OS === 'ios' ? 20 : 12,
   },
+  // Nút icon bên ngoài input
+  iconBtnOutside: {
+    padding: 6, // Giảm vùng bấm một chút
+    marginRight: 2, // Khoảng cách giữa Camera và Mic rất nhỏ
+  },
   inputWrapper: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    height: 50,
-    borderRadius: 30,
-    paddingLeft: 20,
-    paddingRight: 10,
-    marginRight: 12,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    height: 44, // Giảm height từ 50 -> 44
+    borderRadius: 22, 
+    paddingHorizontal: 16, 
+    marginRight: 8, // Khoảng cách với nút Gửi
+    marginLeft: 4, // Khoảng cách với Mic
+    borderWidth: 0, 
   },
   textInput: {
     flex: 1,
     fontSize: 16,
     height: '100%',
   },
-  iconBtn: {
-    padding: 8,
-    marginLeft: 2,
-  },
   sendButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 44, // Giảm size nút gửi từ 50 -> 44
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
     shadowOffset: { width: 0, height: 3 },

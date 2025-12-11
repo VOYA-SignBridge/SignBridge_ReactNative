@@ -37,6 +37,7 @@ export default function RoomScreen() {
 
   const isDark = theme.background === '#000000' || theme.text === '#FFFFFF';
   const borderColor = isDark ? 'transparent' : '#E5E5E5';
+  const inputBackgroundColor = isDark ? '#1c1c1e' : '#F2F2F7';
 
   const [participants, setParticipants] = useState<Record<string, Participant>>({});
   const [messages, setMessages] = useState<any[]>([]);
@@ -315,7 +316,7 @@ export default function RoomScreen() {
                             url={v.mp4_url}
                             width={VIDEO_WIDTH}
                             height={VIDEO_HEIGHT}
-                            //style={{ borderRadius: 8 }}
+                            style={{ borderRadius: 8 }}
                           />
                         </View>
                       ))}
@@ -331,31 +332,57 @@ export default function RoomScreen() {
           }}
         />
 
-        <View style={[styles.inputContainer, { backgroundColor: theme.background, borderTopColor: borderColor }]}>
-          <TouchableOpacity 
-            style={styles.cameraButton} 
-            onPress={() => setShowCamera(true)}
-          >
-            <Ionicons name="camera" size={24} color={theme.primary} />
+        <View style={[
+          styles.inputContainer,
+          {
+            backgroundColor: theme.background,
+            borderTopColor: 'transparent' 
+          }
+        ]}>
+
+          <TouchableOpacity onPress={() => setShowCamera(true)} style={styles.iconBtnOutside}>
+            <Ionicons name="camera" size={22} color={theme.primary} />
           </TouchableOpacity>
 
-          <View style={[styles.inputWrapper, { backgroundColor: theme.controlBG || '#f4f4f5' }]}>
+          <TouchableOpacity style={styles.iconBtnOutside}>
+            <Ionicons name="mic" size={22} color={theme.primary} />
+          </TouchableOpacity>
+
+          <View style={[
+            styles.inputWrapper,
+            {
+              backgroundColor: inputBackgroundColor,
+              borderColor: 'transparent'
+            }
+          ]}>
             <TextInput
-              value={text}
-              onChangeText={setText}
+              style={[styles.input, { color: theme.text }]}
               placeholder="Nhập tin nhắn..."
               placeholderTextColor={theme.icon}
-              style={[styles.input, { color: theme.text }]}
+              value={text}
+              onChangeText={setText}
               multiline
             />
           </View>
 
           <TouchableOpacity 
-            style={[styles.sendButton, { backgroundColor: text.trim() ? theme.primary : theme.lightGray || '#ccc' }]} 
+            style={[
+              styles.sendButton,
+              {
+                backgroundColor: text.trim() ? theme.primary : inputBackgroundColor,
+                shadowColor: text.trim() ? theme.primary : 'transparent',
+                elevation: text.trim() ? 5 : 0
+              }
+            ]} 
             onPress={sendMessage}
             disabled={!text.trim()}
           >
-            <Ionicons name="send" size={20} color="white" />
+            <Ionicons 
+              name="send" 
+              size={20} 
+              color={text.trim() ? "white" : theme.icon} 
+              style={{ marginLeft: text.trim() ? 2 : 0 }}
+            />
           </TouchableOpacity>
         </View>
 
@@ -558,36 +585,39 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderTopWidth: 1,
   },
-  cameraButton: {
-    padding: 10,
-    marginRight: 8,
+  iconBtnOutside: {
+    padding: 6,
+    marginRight: 2,
   },
   inputWrapper: {
     flex: 1,
-    minHeight: 40,
-    maxHeight: 100,
-    borderRadius: 20,
+    height: 44,
+    borderRadius: 22,
     paddingHorizontal: 16,
-    paddingVertical: 4,
+    marginRight: 8,
+    marginLeft: 4,
     justifyContent: 'center',
   },
   input: {
     fontSize: 16,
     paddingTop: 8,
     paddingBottom: 8,
+    height: '100%',
   },
   sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   modalOverlay: {
     flex: 1,

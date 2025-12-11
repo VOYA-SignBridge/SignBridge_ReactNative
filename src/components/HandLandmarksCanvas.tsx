@@ -1,4 +1,3 @@
-// app/components/HandLandmarksCanvas.tsx
 import React, { useEffect, useRef } from 'react';
 import { Canvas, Circle, Line, vec } from '@shopify/react-native-skia';
 import { StyleSheet } from 'react-native';
@@ -15,7 +14,6 @@ type Props = {
   height: number;
 };
 
-// Các kết nối giữa các điểm tạo thành bàn tay
 const HAND_CONNECTIONS = [
   [0, 1], [1, 2], [2, 3], [3, 4],        // Ngón cái
   [0, 5], [5, 6], [6, 7], [7, 8],        // Ngón trỏ
@@ -59,7 +57,6 @@ const HandLandmarksCanvas: React.FC<Props> = ({ landmarks, width, height }) => {
           const cx = point.x * width;
           const cy = point.y * height;
 
-          // Màu sắc khác nhau cho các loại điểm
           let color = '#FF0000'; // Đỏ cho các điểm thông thường
           if (idx === 0) color = '#0000FF'; // Xanh dương cho cổ tay
           if ([4, 8, 12, 16, 20].includes(idx)) color = '#00FF00'; // Xanh lá cho đầu ngón
