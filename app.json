@@ -19,11 +19,11 @@
       }
     },
     "android": {
-  "package": "com.nmnghi.VOYA_App",
-  "adaptiveIcon": {
-    "foregroundImage": "./assets/images/icon.jpg",
-    "backgroundColor": "#FFFFFF"
-  },
+    "package": "com.nmnghi.VOYA_App",
+    "adaptiveIcon": {
+      "foregroundImage": "./assets/images/icon.jpg",
+      "backgroundColor": "#FFFFFF"
+      },
 
 
       "edgeToEdgeEnabled": true,

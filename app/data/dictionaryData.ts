@@ -1,4 +1,4 @@
-export const MOET_DATA = [
+export const moetData = [
   {
     "id": "D0001B",
     "word": "địa chỉ (Bắc)",
