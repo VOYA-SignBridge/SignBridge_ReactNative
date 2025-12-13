@@ -27,6 +27,8 @@
 
 
       "edgeToEdgeEnabled": true,
+      "softwareKeyboardLayoutMode": "resize",
+
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "CAMERA",
