@@ -316,7 +316,7 @@ export default function RoomScreen() {
                             url={v.mp4_url}
                             width={VIDEO_WIDTH}
                             height={VIDEO_HEIGHT}
-                            style={{ borderRadius: 8 }}
+                            //style={{ borderRadius: 8 }}
                           />
                         </View>
                       ))}
