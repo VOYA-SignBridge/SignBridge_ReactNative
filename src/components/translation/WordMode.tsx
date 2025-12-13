@@ -28,17 +28,13 @@ export default function WordMode({ onResult, theme }: Props) {
 
   const handlePressRecord = () => {
     if (isRecording || isProcessing || countdown > 0) return;
-    
-    // Bắt đầu đếm ngược
     setCountdown(3); 
-    // Xóa statusMsg bên dưới để giao diện thoáng, người dùng tập trung vào số to
     setStatusMsg(""); 
   };
 
-  // Logic đếm ngược 3-2-1
   useEffect(() => {
     if (countdown > 0) {
-      // Lưu ý: Không setStatusMsg ở đây nữa
+
       timerRef.current = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
@@ -58,7 +54,6 @@ export default function WordMode({ onResult, theme }: Props) {
   const startRecordingNow = () => {
     keypointsBuffer.current = [];
     setIsRecording(true);
-    // Khi bắt đầu thu thật sự mới hiện thông tin frame
     setStatusMsg(`Đang thu: 0/${SEQ_LEN}`);
   };
 
@@ -91,8 +86,7 @@ export default function WordMode({ onResult, theme }: Props) {
 
         const currentBuffer = keypointsBuffer.current;
         currentBuffer.push(frameVector);
-        
-        // Cập nhật tiến độ thu frame
+
         setStatusMsg(`Đang thu: ${currentBuffer.length}/${SEQ_LEN}`);
 
         if (currentBuffer.length >= SEQ_LEN) {
@@ -138,21 +132,18 @@ export default function WordMode({ onResult, theme }: Props) {
 
   return (
     <View style={styles.container}>
-      {/* Cảnh báo không thấy tay */}
       {!hasHand && (
           <View style={styles.warningBox}>
               <Text style={styles.warningText}>⚠️ Không thấy tay</Text>
           </View>
       )}
 
-      {/* Số đếm ngược to giữa màn hình */}
       {countdown > 0 && (
           <View style={styles.countdownOverlay}>
               <Text style={[styles.countdownText, { color: theme.primary }]}>{countdown}</Text>
           </View>
       )}
 
-      {/* Nút quay */}
       <TouchableOpacity 
         style={[
             styles.recordBtn, 
@@ -172,7 +163,6 @@ export default function WordMode({ onResult, theme }: Props) {
         )}
       </TouchableOpacity>
       
-      {/* Chỉ hiển thị text khi statusMsg có nội dung */}
       {!!statusMsg && <Text style={styles.statusText}>{statusMsg}</Text>}
     </View>
   );
@@ -228,11 +218,11 @@ const styles = StyleSheet.create({
   },
   countdownOverlay: {
       position: 'absolute',
-      top: -250, // Đẩy lên cao hơn một chút cho cân đối giữa màn hình
+      top: -250,
       alignSelf: 'center',
   },
   countdownText: {
-      fontSize: 120, // Tăng kích thước số đếm ngược
+      fontSize: 100, 
       fontWeight: 'bold',
       textShadowColor: 'black',
       textShadowRadius: 10,

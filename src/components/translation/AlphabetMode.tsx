@@ -9,7 +9,7 @@ const eventEmitter = new NativeEventEmitter(HandLandmarks);
 
 type Props = {
   onResult: (text: string) => void;
-  theme: any; // Nhận theme
+  theme: any;
 };
 
 export default function AlphabetMode({ onResult, theme }: Props) {
@@ -95,10 +95,8 @@ export default function AlphabetMode({ onResult, theme }: Props) {
           ) : (
               <View style={styles.resultContainer}>
                   {detectedChar ? (
-                      // Sử dụng màu Theme cho chữ cái
                       <Text style={[styles.largeChar, { color: theme.primary }]}>{detectedChar}</Text>
                   ) : (
-                      // Sử dụng màu Theme cho loading
                       <ActivityIndicator size="small" color={theme.primary} />
                   )}
                   
@@ -152,7 +150,6 @@ const styles = StyleSheet.create({
   largeChar: {
       fontSize: 36,
       fontWeight: 'bold',
-      // Color sẽ được override bởi props
   },
   infoColumn: {
       justifyContent: 'center'

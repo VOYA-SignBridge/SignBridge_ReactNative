@@ -18,12 +18,11 @@ import { Ionicons } from '@expo/vector-icons';
 import SignLanguageCamera from '@/components/SignLanguageCamera';
 import { privateApi } from '@/api/privateApi';
 
-// Import 2 mode
 import WordMode from '@/components/translation/WordMode';
 import AlphabetMode from '@/components/translation/AlphabetMode';
 
 export default function TranslationScreen() {
-  const { colors: theme } = useTheme(); // Lấy theme màu
+  const { colors: theme } = useTheme();
 
   const [showCamera, setShowCamera] = useState(false);
   const [mode, setMode] = useState<'word' | 'letter'>('word');
@@ -42,7 +41,6 @@ export default function TranslationScreen() {
     if (videoUrl && player) player.play();
   }, [videoUrl, player]);
 
-  // Reset text khi đổi chế độ
   useEffect(() => {
       setTranslatedText("");
   }, [showCamera, mode]);
@@ -83,10 +81,8 @@ export default function TranslationScreen() {
   if (showCamera) {
     return (
         <View style={{flex: 1, backgroundColor: 'black'}}>
-            {/* Camera Nền */}
             <SignLanguageCamera theme={theme} />
             
-            {/* Nút Thoát */}
             <TouchableOpacity 
                 onPress={closeCamera} 
                 style={styles.closeBtn}
@@ -95,7 +91,6 @@ export default function TranslationScreen() {
                 <Ionicons name="close" size={28} color="white" />
             </TouchableOpacity>
 
-            {/* Mode Switcher */}
             <View style={styles.modeSwitchContainer}>
                 <View style={styles.modeSwitchBackground}>
                     <TouchableOpacity 
@@ -124,8 +119,6 @@ export default function TranslationScreen() {
                     </TouchableOpacity>
                 </View>
             </View>
-
-            {/* Box hiển thị kết quả dịch - CHỈ HIỆN Ở WORD MODE */}
             {mode === 'word' && (
                 <View style={[styles.cameraResultBox, { borderColor: 'rgba(255,255,255,0.1)' }]}>
                     <Text style={[styles.cameraResultLabel, { color: theme.primary }]}>Kết quả dịch:</Text>
@@ -139,8 +132,6 @@ export default function TranslationScreen() {
                     )}
                 </View>
             )}
-
-            {/* Logic Layer - ĐÃ SỬA: Truyền theme vào đây */}
             <View style={styles.controlLayer}>
                 {mode === 'word' ? (
                     <WordMode onResult={handleWordResult} theme={theme} />
@@ -151,8 +142,6 @@ export default function TranslationScreen() {
         </View>
     );
   }
-
-  // --- UI Màn hình chính (Giữ nguyên) ---
   return (
     <SafeAreaView style={[styles.mainContainer, { backgroundColor: theme.background }]}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
@@ -212,8 +201,7 @@ const styles = StyleSheet.create({
   inputWrapper: { flex: 1, flexDirection: 'row', alignItems: 'center', height: 44, borderRadius: 22, paddingHorizontal: 16, marginRight: 8, marginLeft: 4, borderWidth: 0 },
   textInput: { flex: 1, fontSize: 16, height: '100%' },
   sendButton: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 4 },
-  
-  // --- CAMERA STYLES ---
+
   closeBtn: {
       position: 'absolute',
       top: 50, 

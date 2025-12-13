@@ -26,11 +26,8 @@ interface SignLanguageCameraProps {
 export default function SignLanguageCamera({ theme }: SignLanguageCameraProps) {
   const { hasPermission } = useCameraPermission();
   const device = useCameraDevice('back');
-  
-  // State chỉ dùng để vẽ Canvas
   const [handLandmarks, setHandLandmarks] = useState<LandmarkPoint[][]>([]);
 
-  // Init Model khi mount
   useEffect(() => {
     try {
       if (HandLandmarks?.initModel) HandLandmarks.initModel();
@@ -39,7 +36,6 @@ export default function SignLanguageCamera({ theme }: SignLanguageCameraProps) {
     }
   }, []);
 
-  // Lắng nghe sự kiện để vẽ Canvas
   useEffect(() => {
     const sub = eventEmitter.addListener('onHandLandmarksDetected', (event) => {
       if (event.landmarks) {
@@ -53,9 +49,6 @@ export default function SignLanguageCamera({ theme }: SignLanguageCameraProps) {
 
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
-    // Logic frame skip để giảm tải CPU
-    // frame.counter chưa có sẵn, ta dùng random hoặc biến global bên ngoài nếu cần thiết
-    // Ở đây gọi plugin liên tục, plugin native sẽ tự handle skip hoặc device fps thấp
     if (plugin != null) plugin.call(frame);
   }, []);
 
